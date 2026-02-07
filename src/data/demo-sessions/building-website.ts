@@ -170,6 +170,9 @@ export const buildingWebsiteSession: AgentSession = {
   ],
 };
 
+import { debuggingApiSession } from './debugging-api';
+
 export const demoSessions: AgentSession[] = [
   buildingWebsiteSession,
+  debuggingApiSession,
 ];

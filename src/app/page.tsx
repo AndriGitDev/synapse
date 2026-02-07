@@ -1,15 +1,26 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import { Brain, Upload, Radio, Github, Sparkles } from 'lucide-react';
 import { SynapseGraph } from '@/components/graph/SynapseGraph';
 import { PlaybackControls } from '@/components/controls/PlaybackControls';
+import { SessionSelector } from '@/components/ui/SessionSelector';
+import { EventDetail } from '@/components/ui/EventDetail';
 import { useSynapseStore } from '@/lib/store';
 import { demoSessions } from '@/data/demo-sessions/building-website';
 
 export default function Home() {
-  const { mode, setMode, session, setSession, reset } = useSynapseStore();
+  const { 
+    mode, 
+    setMode, 
+    session, 
+    setSession, 
+    reset, 
+    selectedEventId, 
+    setSelectedEventId,
+    playback 
+  } = useSynapseStore();
   
   // Load demo session on mount
   useEffect(() => {
@@ -22,12 +33,26 @@ export default function Home() {
   const handleModeChange = (newMode: 'demo' | 'upload' | 'live') => {
     setMode(newMode);
     reset();
+    setSelectedEventId(null);
     if (newMode === 'demo') {
       setSession(demoSessions[0]);
     } else {
       setSession(null);
     }
   };
+  
+  // Handle session change
+  const handleSessionChange = (newSession: typeof demoSessions[0]) => {
+    reset();
+    setSelectedEventId(null);
+    setSession(newSession);
+  };
+  
+  // Get selected event
+  const selectedEvent = useMemo(() => {
+    if (!session || !selectedEventId) return null;
+    return session.events.find(e => e.id === selectedEventId) || null;
+  }, [session, selectedEventId]);
   
   return (
     <div className="flex flex-col h-screen bg-slate-950 text-white">
@@ -145,29 +170,31 @@ export default function Home() {
           </div>
         )}
         
-        {/* Session info overlay */}
-        {session && mode === 'demo' && (
-          <div className="absolute top-4 left-4 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-lg p-4 max-w-xs">
-            <h3 className="font-semibold text-white mb-1">{session.name}</h3>
-            <p className="text-sm text-slate-400">{session.description}</p>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 text-xs rounded">
-                {session.agent}
-              </span>
-              <span className="text-xs text-slate-500">
-                {session.events.length} events
-              </span>
-            </div>
+        {/* Session selector (demo mode) */}
+        {mode === 'demo' && (
+          <div className="absolute top-4 left-4 z-10">
+            <SessionSelector
+              sessions={demoSessions}
+              currentSession={session}
+              onSelect={handleSessionChange}
+            />
           </div>
         )}
+        
+        {/* Event detail panel */}
+        <EventDetail 
+          event={selectedEvent} 
+          onClose={() => setSelectedEventId(null)} 
+        />
       </main>
       
       {/* Playback controls */}
       {session && <PlaybackControls />}
       
       {/* Built by AI badge */}
-      <div className="absolute bottom-20 right-4 text-xs text-slate-600">
-        Built by an AI 🤖
+      <div className="absolute bottom-20 right-4 text-xs text-slate-600 flex items-center gap-1">
+        <span>Built by an AI</span>
+        <span>🤖</span>
       </div>
     </div>
   );
