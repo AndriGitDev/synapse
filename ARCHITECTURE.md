@@ -153,10 +153,13 @@ synapse/
 
 ### Day 1-2: Foundation ✨
 - [x] Architecture document
-- [ ] Next.js project setup
-- [ ] React Flow basic integration
-- [ ] Core data types
-- [ ] Basic node components
+- [x] Next.js project setup
+- [x] React Flow basic integration
+- [x] Core data types
+- [x] Basic node components
+- [x] Playback controls
+- [x] Demo session data
+- [x] GitHub repo created
 
 ### Day 3: Demo Mode 🎬
 - [ ] Demo session data (record real Clawdbot session)
