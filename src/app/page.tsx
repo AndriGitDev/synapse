@@ -7,6 +7,7 @@ import { SynapseGraph } from '@/components/graph/SynapseGraph';
 import { PlaybackControls } from '@/components/controls/PlaybackControls';
 import { SessionSelector } from '@/components/ui/SessionSelector';
 import { EventDetail } from '@/components/ui/EventDetail';
+import { FileUpload } from '@/components/ui/FileUpload';
 import { useSynapseStore } from '@/lib/store';
 import { demoSessions } from '@/data/demo-sessions/building-website';
 
@@ -125,22 +126,26 @@ export default function Home() {
           </ReactFlowProvider>
         )}
         
-        {mode === 'upload' && (
+        {mode === 'upload' && !session && (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center max-w-md p-8">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center">
-                <Upload className="w-8 h-8 text-slate-400" />
-              </div>
+            <div className="text-center p-8">
               <h2 className="text-xl font-semibold mb-2">Upload Agent Logs</h2>
-              <p className="text-slate-400 mb-6">
+              <p className="text-slate-400 mb-6 max-w-md">
                 Drag and drop your agent session logs to visualize them.
-                Supports Clawdbot, LangChain, and generic JSONL formats.
               </p>
-              <div className="border-2 border-dashed border-slate-700 rounded-xl p-8 hover:border-indigo-500 transition-colors cursor-pointer">
-                <p className="text-slate-500">Drop files here or click to browse</p>
-              </div>
+              <FileUpload 
+                onSessionLoaded={(s) => {
+                  setSession(s);
+                }} 
+              />
             </div>
           </div>
+        )}
+        
+        {mode === 'upload' && session && (
+          <ReactFlowProvider>
+            <SynapseGraph />
+          </ReactFlowProvider>
         )}
         
         {mode === 'live' && (
