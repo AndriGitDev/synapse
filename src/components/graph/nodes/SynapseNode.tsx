@@ -64,10 +64,10 @@ function SynapseNodeComponent({ data, selected }: NodeProps<SynapseNodeData>) {
         transition-all duration-200
       `}
     >
-      {/* Input handle */}
+      {/* Input handle (left side for horizontal layout) */}
       <Handle
         type="target"
-        position={Position.Top}
+        position={Position.Left}
         className="!bg-slate-400 !w-3 !h-3 !border-2 !border-slate-600"
       />
       
@@ -121,10 +121,10 @@ function SynapseNodeComponent({ data, selected }: NodeProps<SynapseNodeData>) {
         </div>
       )}
       
-      {/* Output handle */}
+      {/* Output handle (right side for horizontal layout) */}
       <Handle
         type="source"
-        position={Position.Bottom}
+        position={Position.Right}
         className="!bg-slate-400 !w-3 !h-3 !border-2 !border-slate-600"
       />
     </motion.div>

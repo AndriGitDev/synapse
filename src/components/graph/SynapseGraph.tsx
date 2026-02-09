@@ -1,16 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import ReactFlow, {
   Background,
   Controls,
   MiniMap,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   Node,
   Edge,
   ConnectionMode,
   BackgroundVariant,
+  ReactFlowInstance,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useSynapseStore } from '@/lib/store';
@@ -21,29 +23,33 @@ const nodeTypes = {
   synapse: SynapseNode,
 };
 
-// Layout algorithm: simple vertical timeline with branching
+// Layout algorithm: HORIZONTAL timeline with branching
 function layoutEvents(events: AgentEvent[], currentIndex: number): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   
-  const VERTICAL_SPACING = 120;
-  const HORIZONTAL_SPACING = 320;
-  const START_X = 400;
-  const START_Y = 50;
+  const HORIZONTAL_SPACING = 350; // Space between nodes horizontally
+  const VERTICAL_SPACING = 150;   // Space for branching vertically
+  const START_X = 100;
+  const START_Y = 300;
   
-  // Track column positions for parallel events
-  const columnMap = new Map<string, number>();
-  let currentColumn = 0;
+  // Track vertical offset for branching
+  let mainY = START_Y;
   
   events.forEach((event, index) => {
-    // Determine column (for now, simple sequential layout)
-    let x = START_X;
-    let y = START_Y + index * VERTICAL_SPACING;
+    // Horizontal timeline - each event moves right
+    let x = START_X + index * HORIZONTAL_SPACING;
+    let y = mainY;
     
-    // Offset tool_result nodes to the right
+    // Offset tool_result nodes slightly down to show connection
     if (event.type === 'tool_result') {
-      x += HORIZONTAL_SPACING / 2;
-      y -= VERTICAL_SPACING / 2;
+      y += VERTICAL_SPACING / 2;
+      x -= HORIZONTAL_SPACING / 3; // Bring it back a bit to cluster with tool_call
+    }
+    
+    // Offset thought/decision nodes slightly up for visual hierarchy
+    if (event.type === 'thought' || event.type === 'decision') {
+      y -= 20;
     }
     
     const nodeData: SynapseNodeData = {
@@ -83,10 +89,13 @@ function layoutEvents(events: AgentEvent[], currentIndex: number): { nodes: Node
   return { nodes, edges };
 }
 
-export function SynapseGraph() {
+// Inner component that uses useReactFlow (must be inside ReactFlowProvider)
+function SynapseGraphInner() {
   const { session, playback, selectedEventId, setSelectedEventId } = useSynapseStore();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const { setCenter, getZoom } = useReactFlow();
+  const isInitialMount = useRef(true);
   
   // Update layout when visible events change
   useEffect(() => {
@@ -105,6 +114,47 @@ export function SynapseGraph() {
     setEdges(newEdges);
   }, [session, playback.currentEventIndex, setNodes, setEdges]);
   
+  // Auto-pan to follow the active node during playback
+  useEffect(() => {
+    if (!session || playback.currentEventIndex < 0) return;
+    
+    // Skip auto-pan on initial mount
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
+    const currentEvent = session.events[playback.currentEventIndex];
+    if (!currentEvent) return;
+    
+    // Find the node position
+    const HORIZONTAL_SPACING = 350;
+    const START_X = 100;
+    const START_Y = 300;
+    
+    let x = START_X + playback.currentEventIndex * HORIZONTAL_SPACING;
+    let y = START_Y;
+    
+    // Adjust for special node types
+    if (currentEvent.type === 'tool_result') {
+      y += 75;
+      x -= HORIZONTAL_SPACING / 3;
+    }
+    
+    // Smoothly pan to center on the active node
+    const currentZoom = getZoom();
+    setCenter(x + 140, y + 60, { 
+      zoom: Math.max(currentZoom, 0.65), // Don't zoom out too much
+      duration: 500 
+    });
+    
+  }, [session, playback.currentEventIndex, setCenter, getZoom]);
+  
+  // Reset initial mount flag when session changes
+  useEffect(() => {
+    isInitialMount.current = true;
+  }, [session?.id]);
+  
   // Handle node click
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     setSelectedEventId(node.id === selectedEventId ? null : node.id);
@@ -114,7 +164,6 @@ export function SynapseGraph() {
   const minimapNodeColor = useCallback((node: Node) => {
     const event = (node.data as SynapseNodeData).event;
     const colors = EVENT_COLORS[event.type];
-    // Return a hex color based on event type
     const colorMap: Record<string, string> = {
       'border-purple-500': '#8b5cf6',
       'border-blue-500': '#3b82f6',
@@ -138,38 +187,47 @@ export function SynapseGraph() {
   }
   
   return (
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onNodeClick={onNodeClick}
+      nodeTypes={nodeTypes}
+      connectionMode={ConnectionMode.Loose}
+      fitView
+      fitViewOptions={{ padding: 0.5, maxZoom: 0.8 }}
+      minZoom={0.1}
+      maxZoom={2}
+      defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
+      proOptions={{ hideAttribution: true }}
+    >
+      <Background 
+        variant={BackgroundVariant.Dots} 
+        gap={20} 
+        size={1} 
+        color="#1e293b" 
+      />
+      <Controls 
+        className="!bg-slate-800 !border-slate-700 !rounded-lg"
+        showInteractive={false}
+      />
+      <MiniMap 
+        nodeColor={minimapNodeColor}
+        maskColor="rgba(0, 0, 0, 0.8)"
+        className="!bg-slate-900 !border-slate-700 !rounded-lg"
+        pannable
+        zoomable
+      />
+    </ReactFlow>
+  );
+}
+
+// Wrapper component (exported)
+export function SynapseGraph() {
+  return (
     <div className="w-full h-full bg-slate-950">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeClick={onNodeClick}
-        nodeTypes={nodeTypes}
-        connectionMode={ConnectionMode.Loose}
-        fitView
-        fitViewOptions={{ padding: 0.2 }}
-        minZoom={0.1}
-        maxZoom={2}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background 
-          variant={BackgroundVariant.Dots} 
-          gap={20} 
-          size={1} 
-          color="#1e293b" 
-        />
-        <Controls 
-          className="!bg-slate-800 !border-slate-700 !rounded-lg"
-          showInteractive={false}
-        />
-        <MiniMap 
-          nodeColor={minimapNodeColor}
-          maskColor="rgba(0, 0, 0, 0.8)"
-          className="!bg-slate-900 !border-slate-700 !rounded-lg"
-        />
-      </ReactFlow>
+      <SynapseGraphInner />
     </div>
   );
 }
