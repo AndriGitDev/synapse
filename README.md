@@ -4,92 +4,104 @@
 
 SYNAPSE visualizes AI agent decision-making in real-time. See every thought, tool call, and reasoning step as a beautiful interactive graph.
 
-![SYNAPSE Demo](./public/demo.png)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/AndriGitDev/synapse)
 
 ## ✨ Features
 
-- **Demo Mode** — Pre-loaded sessions showing interesting agent runs
-- **Upload Mode** — Drag & drop your agent logs (Clawdbot, LangChain, JSONL)
-- **Live Mode** — Connect to a running agent via WebSocket
-- **Beautiful Visualization** — React Flow-powered interactive graphs
-- **Playback Controls** — Play, pause, step through, adjust speed
+- **🎬 Demo Mode** — Pre-loaded sessions showing AI agents in action
+- **📤 Upload Mode** — Drag & drop your Clawdbot session files
+- **⚡ Live Mode** — Real-time WebSocket streaming (coming soon)
+- **🎨 Beautiful Graph** — React Flow-powered interactive visualization
+- **▶️ Playback Controls** — Play, pause, step through at 1-8x speed
+- **🔍 Event Details** — Click any node for full context
 
 ## 🚀 Quick Start
 
 ```bash
-# Install dependencies
+# Clone
+git clone https://github.com/AndriGitDev/synapse.git
+cd synapse
+
+# Install
 npm install
 
-# Run development server
+# Run
 npm run dev
-
-# Build for production
-npm run build
 ```
+
+Open [http://localhost:3000](http://localhost:3000) and hit play!
+
+## 🎮 Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `Space` | Play / Pause |
+| `←` | Step backward |
+| `→` | Step forward |
+| `R` | Reset to start |
+
+## 📊 Demo Sessions
+
+1. **Building a Landing Page** — Watch an AI create a website from scratch
+2. **Debugging a 500 Error** — Follow along as bugs get squashed
+3. **Security Vulnerability Scan** — See an AI audit code for security issues
 
 ## 🤖 The Story
 
-This entire project was built by an AI agent (Claude/Data) working autonomously. The human provided the goal and deadline — the AI made all technical decisions, wrote all code, and solved all problems independently.
+> This entire project was coded by an AI agent (Claude/Data) working autonomously. The human provided the goal and deadline — the AI made all technical and design decisions independently.
 
 **Built for:** [naglasupan.is](https://naglasupan.is) programming competition  
-**Deadline:** February 17th, 2026  
-**Development time:** 10 days
+**Development time:** 10 days  
+**Lines written by AI:** All of them
 
 ## 🛠️ Tech Stack
 
-- **Framework:** Next.js 15 (App Router)
-- **Visualization:** React Flow
-- **Styling:** Tailwind CSS
-- **Animation:** Framer Motion
-- **State:** Zustand
-- **Deployment:** Vercel
-
-## 📊 Supported Formats
-
-| Format | Status |
-|--------|--------|
-| Clawdbot Sessions | ✅ |
-| LangChain Traces | 🚧 Coming |
-| CrewAI Logs | 🚧 Coming |
-| Generic JSONL | 🚧 Coming |
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 15 |
+| Visualization | React Flow |
+| Styling | Tailwind CSS |
+| Animation | Framer Motion |
+| State | Zustand |
+| Deployment | Vercel |
 
 ## 📁 Project Structure
 
 ```
 synapse/
 ├── src/
-│   ├── app/              # Next.js app router
+│   ├── app/                 # Next.js app router
 │   ├── components/
-│   │   ├── graph/        # React Flow components
-│   │   ├── controls/     # Playback controls
-│   │   └── ui/           # Shared UI components
+│   │   ├── graph/           # React Flow visualization
+│   │   ├── controls/        # Playback UI
+│   │   └── ui/              # Shared components
 │   ├── lib/
-│   │   ├── types.ts      # TypeScript types
-│   │   ├── store.ts      # Zustand store
-│   │   └── parsers/      # Log format parsers
+│   │   ├── types.ts         # TypeScript definitions
+│   │   ├── store.ts         # Zustand state
+│   │   └── parsers/         # Session format parsers
 │   └── data/
-│       └── demo-sessions/ # Pre-loaded demos
+│       └── demo-sessions/   # Pre-loaded demos
 └── public/
 ```
 
-## 🎮 Keyboard Shortcuts
+## 📤 Supported Formats
 
-| Key | Action |
-|-----|--------|
-| `Space` | Play/Pause |
-| `←` | Step backward |
-| `→` | Step forward |
-| `R` | Reset to start |
+| Format | Status |
+|--------|--------|
+| Clawdbot Sessions | ✅ Full support |
+| LangChain Traces | 🚧 Coming soon |
+| CrewAI Logs | 🚧 Planned |
+| Generic JSONL | 🚧 Planned |
 
 ## 🔗 Links
 
 - **Live Demo:** [synapse.andri.is](https://synapse.andri.is)
-- **Author:** [Andri](https://andri.is) & [Data](https://blog.andri.is) 🤖
+- **Author:** [Data](https://blog.andri.is) 🤖 & [Andri](https://andri.is)
 - **Competition:** [naglasupan.is](https://naglasupan.is)
 
 ## 📜 License
 
-MIT
+MIT — Use it, fork it, learn from it.
 
 ---
 
