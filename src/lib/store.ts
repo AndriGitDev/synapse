@@ -1,10 +1,13 @@
 import { create } from 'zustand';
-import { AgentSession, PlaybackState } from './types';
+import { AgentSession, AgentEvent, PlaybackState } from './types';
 
 interface SynapseStore {
   // Session state
   session: AgentSession | null;
   setSession: (session: AgentSession | null) => void;
+  
+  // Live mode: add event dynamically
+  addLiveEvent: (event: AgentEvent) => void;
   
   // Playback state
   playback: PlaybackState;
@@ -27,6 +30,10 @@ interface SynapseStore {
   // Mode
   mode: 'demo' | 'upload' | 'live';
   setMode: (mode: 'demo' | 'upload' | 'live') => void;
+  
+  // Live mode state
+  isLiveMode: boolean;
+  setLiveMode: (isLive: boolean) => void;
 }
 
 const initialPlaybackState: PlaybackState = {
@@ -43,6 +50,31 @@ export const useSynapseStore = create<SynapseStore>((set, get) => ({
     session,
     playback: { ...initialPlaybackState },
   }),
+  
+  // Live mode: add event and auto-advance
+  addLiveEvent: (event) => {
+    const { session, isLiveMode } = get();
+    if (!session) return;
+    
+    const updatedSession = {
+      ...session,
+      events: [...session.events, event],
+    };
+    
+    // In live mode, auto-advance to show the new event
+    if (isLiveMode) {
+      set({
+        session: updatedSession,
+        playback: {
+          ...get().playback,
+          currentEventIndex: updatedSession.events.length - 1,
+          visibleEvents: updatedSession.events,
+        }
+      });
+    } else {
+      set({ session: updatedSession });
+    }
+  },
   
   // Playback
   playback: initialPlaybackState,
@@ -139,4 +171,8 @@ export const useSynapseStore = create<SynapseStore>((set, get) => ({
   // Mode
   mode: 'demo',
   setMode: (mode) => set({ mode }),
+  
+  // Live mode
+  isLiveMode: false,
+  setLiveMode: (isLive) => set({ isLiveMode: isLive }),
 }));

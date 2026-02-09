@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import { Brain, Upload, Github, Sparkles, Zap } from 'lucide-react';
 import { SynapseGraph } from '@/components/graph/SynapseGraph';
@@ -8,8 +8,10 @@ import { PlaybackControls } from '@/components/controls/PlaybackControls';
 import { SessionSelector } from '@/components/ui/SessionSelector';
 import { EventDetail } from '@/components/ui/EventDetail';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { LiveConnection } from '@/components/live/LiveConnection';
 import { useSynapseStore } from '@/lib/store';
 import { demoSessions } from '@/data/demo-sessions/building-website';
+import { AgentSession, AgentEvent } from '@/lib/types';
 
 export default function Home() {
   const { 
@@ -20,7 +22,9 @@ export default function Home() {
     reset, 
     selectedEventId, 
     setSelectedEventId,
-    playback 
+    playback,
+    addLiveEvent,
+    setLiveMode,
   } = useSynapseStore();
   
   // Load demo session on mount
@@ -35,6 +39,7 @@ export default function Home() {
     setMode(newMode);
     reset();
     setSelectedEventId(null);
+    setLiveMode(newMode === 'live');
     if (newMode === 'demo') {
       setSession(demoSessions[0]);
     } else {
@@ -54,6 +59,24 @@ export default function Home() {
     if (!session || !selectedEventId) return null;
     return session.events.find(e => e.id === selectedEventId) || null;
   }, [session, selectedEventId]);
+  
+  // Live mode handlers
+  const handleLiveSessionStart = useCallback((sessionInfo: { id: string; name: string; agent: string }) => {
+    const newSession: AgentSession = {
+      id: sessionInfo.id,
+      name: sessionInfo.name || 'Live Session',
+      description: 'Real-time agent session',
+      agent: sessionInfo.agent as AgentSession['agent'],
+      startedAt: new Date(),
+      events: [],
+    };
+    setSession(newSession);
+    setLiveMode(true);
+  }, [setSession, setLiveMode]);
+  
+  const handleLiveEvent = useCallback((event: AgentEvent) => {
+    addLiveEvent(event);
+  }, [addLiveEvent]);
   
   return (
     <div className="flex flex-col h-screen bg-slate-950 text-white overflow-hidden">
@@ -128,12 +151,14 @@ export default function Home() {
       
       {/* Main content */}
       <main className="flex-1 overflow-hidden relative">
+        {/* Demo mode */}
         {mode === 'demo' && (
           <ReactFlowProvider>
             <SynapseGraph />
           </ReactFlowProvider>
         )}
         
+        {/* Upload mode - no session yet */}
         {mode === 'upload' && !session && (
           <div className="flex items-center justify-center h-full">
             <div className="text-center p-8">
@@ -153,41 +178,26 @@ export default function Home() {
           </div>
         )}
         
+        {/* Upload mode - session loaded */}
         {mode === 'upload' && session && (
           <ReactFlowProvider>
             <SynapseGraph />
           </ReactFlowProvider>
         )}
         
-        {mode === 'live' && (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center max-w-md p-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 mb-6 relative">
-                <Zap className="w-7 h-7 text-slate-400" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full animate-pulse" />
-              </div>
-              <h2 className="text-xl font-semibold mb-2">Live Connection</h2>
-              <p className="text-slate-500 mb-6">
-                Connect to a running AI agent to watch its thinking in real-time.
-              </p>
-              <div className="bg-slate-800/50 rounded-xl p-4 mb-4 border border-slate-700/50">
-                <label className="block text-sm text-slate-400 mb-2 text-left">
-                  WebSocket URL
-                </label>
-                <input
-                  type="text"
-                  placeholder="ws://localhost:8080/synapse"
-                  className="w-full px-3 py-2.5 bg-slate-900/80 border border-slate-700 rounded-lg text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all"
-                />
-              </div>
-              <button className="w-full px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-lg font-medium transition-all shadow-lg shadow-indigo-500/20">
-                Connect
-              </button>
-              <p className="text-xs text-slate-600 mt-4">
-                Coming soon: Clawdbot integration
-              </p>
-            </div>
-          </div>
+        {/* Live mode - not connected */}
+        {mode === 'live' && !session && (
+          <LiveConnection
+            onSessionStart={handleLiveSessionStart}
+            onEventReceived={handleLiveEvent}
+          />
+        )}
+        
+        {/* Live mode - connected and receiving */}
+        {mode === 'live' && session && (
+          <ReactFlowProvider>
+            <SynapseGraph />
+          </ReactFlowProvider>
         )}
         
         {/* Session selector (demo mode) */}
@@ -201,6 +211,26 @@ export default function Home() {
           </div>
         )}
         
+        {/* Live mode session info */}
+        {mode === 'live' && session && (
+          <div className="absolute top-4 left-4 z-10">
+            <div className="flex items-center gap-3 bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 rounded-xl px-4 py-3">
+              <div className="relative">
+                <div className="p-2 bg-green-500/20 rounded-lg border border-green-500/20">
+                  <Zap className="w-4 h-4 text-green-400" />
+                </div>
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-white">{session.name}</div>
+                <div className="text-[11px] text-slate-500">
+                  {session.events.length} events · Live
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Event detail panel */}
         <EventDetail 
           event={selectedEvent} 
@@ -208,7 +238,7 @@ export default function Home() {
         />
         
         {/* Instructions hint */}
-        {session && playback.currentEventIndex < 0 && (
+        {session && playback.currentEventIndex < 0 && mode !== 'live' && (
           <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-slate-800/80 backdrop-blur rounded-full border border-slate-700/50 text-sm text-slate-400">
             <Sparkles className="w-4 h-4 text-indigo-400" />
             Press play or spacebar to start
@@ -216,8 +246,24 @@ export default function Home() {
         )}
       </main>
       
-      {/* Playback controls */}
-      {session && <PlaybackControls />}
+      {/* Playback controls - not shown in live mode while receiving */}
+      {session && mode !== 'live' && <PlaybackControls />}
+      
+      {/* Live mode mini controls */}
+      {session && mode === 'live' && (
+        <div className="bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 px-4 py-3">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="font-mono text-slate-300">{session.events.length}</span>
+              <span className="text-slate-600">events received</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-sm text-green-400">Streaming</span>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Built by AI badge */}
       <a
