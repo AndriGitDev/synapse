@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Play, Cpu, Zap } from 'lucide-react';
+import { ChevronDown, Cpu, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { AgentSession } from '@/lib/types';
 
@@ -57,7 +57,7 @@ export function SessionSelector({ sessions, currentSession, onSelect }: SessionS
               className="absolute top-full left-0 right-0 mt-2 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-2xl overflow-hidden z-50"
             >
               <div className="p-1">
-                {sessions.map((session, index) => (
+                {sessions.map((session) => (
                   <button
                     key={session.id}
                     onClick={() => {

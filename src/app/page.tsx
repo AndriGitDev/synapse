@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from 'react';
 import { ReactFlowProvider } from 'reactflow';
-import { Brain, Upload, Radio, Github, Sparkles, Zap } from 'lucide-react';
+import { Brain, Upload, Github, Sparkles, Zap } from 'lucide-react';
 import { SynapseGraph } from '@/components/graph/SynapseGraph';
 import { PlaybackControls } from '@/components/controls/PlaybackControls';
 import { SessionSelector } from '@/components/ui/SessionSelector';

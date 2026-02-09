@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AgentSession, AgentEvent, PlaybackState } from './types';
+import { AgentSession, PlaybackState } from './types';
 
 interface SynapseStore {
   // Session state

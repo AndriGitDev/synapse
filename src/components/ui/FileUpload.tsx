@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileJson, AlertCircle, CheckCircle, X } from 'lucide-react';
-import { parseSessionJson, ParseResult } from '@/lib/parsers';
+import { parseSessionJson } from '@/lib/parsers';
 import { AgentSession } from '@/lib/types';
 
 interface FileUploadProps {

@@ -12,7 +12,6 @@ import ReactFlow, {
   Edge,
   ConnectionMode,
   BackgroundVariant,
-  ReactFlowInstance,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useSynapseStore } from '@/lib/store';
@@ -34,7 +33,7 @@ function layoutEvents(events: AgentEvent[], currentIndex: number): { nodes: Node
   const START_Y = 300;
   
   // Track vertical offset for branching
-  let mainY = START_Y;
+  const mainY = START_Y;
   
   events.forEach((event, index) => {
     // Horizontal timeline - each event moves right
