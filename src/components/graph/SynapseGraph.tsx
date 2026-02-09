@@ -75,11 +75,12 @@ function layoutEvents(events: AgentEvent[], currentIndex: number): { nodes: Node
         id: `e-${sourceId}-${event.id}`,
         source: sourceId,
         target: event.id,
-        type: 'smoothstep',
+        type: 'default', // Bezier curve looks better horizontally
         animated: index === currentIndex,
         style: {
           stroke: index <= currentIndex ? '#6366f1' : '#334155',
           strokeWidth: 2,
+          strokeLinecap: 'round',
         },
         hidden: index > currentIndex,
       });

@@ -171,8 +171,10 @@ export const buildingWebsiteSession: AgentSession = {
 };
 
 import { debuggingApiSession } from './debugging-api';
+import { securityAuditSession } from './security-audit';
 
 export const demoSessions: AgentSession[] = [
   buildingWebsiteSession,
   debuggingApiSession,
+  securityAuditSession,
 ];
