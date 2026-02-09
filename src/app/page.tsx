@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from 'react';
 import { ReactFlowProvider } from 'reactflow';
-import { Brain, Upload, Radio, Github, Sparkles } from 'lucide-react';
+import { Brain, Upload, Radio, Github, Sparkles, Zap } from 'lucide-react';
 import { SynapseGraph } from '@/components/graph/SynapseGraph';
 import { PlaybackControls } from '@/components/controls/PlaybackControls';
 import { SessionSelector } from '@/components/ui/SessionSelector';
@@ -56,52 +56,60 @@ export default function Home() {
   }, [session, selectedEventId]);
   
   return (
-    <div className="flex flex-col h-screen bg-slate-950 text-white">
+    <div className="flex flex-col h-screen bg-slate-950 text-white overflow-hidden">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur">
+      <header className="flex items-center justify-between px-5 py-3 border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-xl z-20">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl">
-            <Brain className="w-6 h-6 text-white" />
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl blur-md opacity-50" />
+            <div className="relative p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl">
+              <Brain className="w-5 h-5 text-white" />
+            </div>
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">SYNAPSE</h1>
-            <p className="text-xs text-slate-400">Watch AI Agents Think</p>
+            <h1 className="text-lg font-bold tracking-tight flex items-center gap-2">
+              SYNAPSE
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium">
+                BETA
+              </span>
+            </h1>
+            <p className="text-[11px] text-slate-500">Watch AI Agents Think</p>
           </div>
         </div>
         
         {/* Mode tabs */}
-        <div className="flex items-center bg-slate-800/50 rounded-lg p-1">
+        <div className="flex items-center bg-slate-800/40 rounded-lg p-1 border border-slate-700/50">
           <button
             onClick={() => handleModeChange('demo')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
               mode === 'demo' 
-                ? 'bg-indigo-600 text-white' 
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/20' 
+                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
             }`}
           >
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-3.5 h-3.5" />
             Demo
           </button>
           <button
             onClick={() => handleModeChange('upload')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
               mode === 'upload' 
-                ? 'bg-indigo-600 text-white' 
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/20' 
+                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
             }`}
           >
-            <Upload className="w-4 h-4" />
+            <Upload className="w-3.5 h-3.5" />
             Upload
           </button>
           <button
             onClick={() => handleModeChange('live')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
               mode === 'live' 
-                ? 'bg-indigo-600 text-white' 
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/20' 
+                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
             }`}
           >
-            <Radio className="w-4 h-4" />
+            <Zap className="w-3.5 h-3.5" />
             Live
           </button>
         </div>
@@ -111,10 +119,10 @@ export default function Home() {
           href="https://github.com/AndriGitDev/synapse"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 px-3 py-2 text-slate-400 hover:text-white transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-slate-500 hover:text-white transition-colors rounded-lg hover:bg-slate-800/50"
         >
-          <Github className="w-5 h-5" />
-          <span className="text-sm hidden sm:inline">GitHub</span>
+          <Github className="w-4 h-4" />
+          <span className="text-sm hidden sm:inline">Source</span>
         </a>
       </header>
       
@@ -129,9 +137,12 @@ export default function Home() {
         {mode === 'upload' && !session && (
           <div className="flex items-center justify-center h-full">
             <div className="text-center p-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 mb-6">
+                <Upload className="w-7 h-7 text-slate-400" />
+              </div>
               <h2 className="text-xl font-semibold mb-2">Upload Agent Logs</h2>
-              <p className="text-slate-400 mb-6 max-w-md">
-                Drag and drop your agent session logs to visualize them.
+              <p className="text-slate-500 mb-8 max-w-sm">
+                Drag and drop your session files to visualize how your AI agent thinks.
               </p>
               <FileUpload 
                 onSessionLoaded={(s) => {
@@ -151,26 +162,30 @@ export default function Home() {
         {mode === 'live' && (
           <div className="flex items-center justify-center h-full">
             <div className="text-center max-w-md p-8">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center">
-                <Radio className="w-8 h-8 text-slate-400" />
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 mb-6 relative">
+                <Zap className="w-7 h-7 text-slate-400" />
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full animate-pulse" />
               </div>
               <h2 className="text-xl font-semibold mb-2">Live Connection</h2>
-              <p className="text-slate-400 mb-6">
+              <p className="text-slate-500 mb-6">
                 Connect to a running AI agent to watch its thinking in real-time.
               </p>
-              <div className="bg-slate-800 rounded-lg p-4 mb-4">
+              <div className="bg-slate-800/50 rounded-xl p-4 mb-4 border border-slate-700/50">
                 <label className="block text-sm text-slate-400 mb-2 text-left">
                   WebSocket URL
                 </label>
                 <input
                   type="text"
                   placeholder="ws://localhost:8080/synapse"
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2.5 bg-slate-900/80 border border-slate-700 rounded-lg text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all"
                 />
               </div>
-              <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-medium transition-colors">
+              <button className="w-full px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-lg font-medium transition-all shadow-lg shadow-indigo-500/20">
                 Connect
               </button>
+              <p className="text-xs text-slate-600 mt-4">
+                Coming soon: Clawdbot integration
+              </p>
             </div>
           </div>
         )}
@@ -191,16 +206,28 @@ export default function Home() {
           event={selectedEvent} 
           onClose={() => setSelectedEventId(null)} 
         />
+        
+        {/* Instructions hint */}
+        {session && playback.currentEventIndex < 0 && (
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-slate-800/80 backdrop-blur rounded-full border border-slate-700/50 text-sm text-slate-400">
+            <Sparkles className="w-4 h-4 text-indigo-400" />
+            Press play or spacebar to start
+          </div>
+        )}
       </main>
       
       {/* Playback controls */}
       {session && <PlaybackControls />}
       
       {/* Built by AI badge */}
-      <div className="absolute bottom-20 right-4 text-xs text-slate-600 flex items-center gap-1">
-        <span>Built by an AI</span>
-        <span>🤖</span>
-      </div>
+      <a
+        href="https://andri.is"
+        target="_blank"
+        rel="noopener noreferrer" 
+        className="absolute bottom-20 right-4 text-[10px] text-slate-700 hover:text-slate-500 transition-colors"
+      >
+        Built by an AI 🤖
+      </a>
     </div>
   );
 }

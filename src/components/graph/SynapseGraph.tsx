@@ -144,8 +144,8 @@ function SynapseGraphInner() {
     // Smoothly pan to center on the active node
     const currentZoom = getZoom();
     setCenter(x + 140, y + 60, { 
-      zoom: Math.max(currentZoom, 0.65), // Don't zoom out too much
-      duration: 500 
+      zoom: Math.max(currentZoom, 0.7), // Don't zoom out too much
+      duration: 300 // Faster pan for snappier feel
     });
     
   }, [session, playback.currentEventIndex, setCenter, getZoom]);

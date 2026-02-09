@@ -32,7 +32,7 @@ interface SynapseStore {
 const initialPlaybackState: PlaybackState = {
   isPlaying: false,
   currentEventIndex: -1,
-  speed: 1,
+  speed: 2, // Default to 2x for snappier feel
   visibleEvents: [],
 };
 
