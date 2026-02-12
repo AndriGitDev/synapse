@@ -5,16 +5,19 @@ import { X, Clock, Hash, ArrowRight } from 'lucide-react';
 import { 
   Brain, 
   Wrench, 
-  CheckCircle, 
+  CheckCircle,
+  CheckCircle2,
   FileText, 
   FilePlus, 
   GitBranch, 
   AlertCircle,
   User,
   Bot,
+  Sparkles,
+  ArrowRightLeft,
   LucideIcon
 } from 'lucide-react';
-import { AgentEvent, EVENT_COLORS, EventType } from '@/lib/types';
+import { AgentEvent, EVENT_COLORS, EventType, AGENT_COLORS } from '@/lib/types';
 
 const ICONS: Record<EventType, LucideIcon> = {
   thought: Brain,
@@ -26,6 +29,9 @@ const ICONS: Record<EventType, LucideIcon> = {
   error: AlertCircle,
   user_message: User,
   assistant_message: Bot,
+  spawn_agent: Sparkles,
+  agent_complete: CheckCircle2,
+  agent_handoff: ArrowRightLeft,
 };
 
 const TYPE_LABELS: Record<EventType, string> = {
@@ -38,6 +44,9 @@ const TYPE_LABELS: Record<EventType, string> = {
   error: 'Error',
   user_message: 'User Message',
   assistant_message: 'Response',
+  spawn_agent: 'Spawning Agent',
+  agent_complete: 'Agent Complete',
+  agent_handoff: 'Agent Handoff',
 };
 
 interface EventDetailProps {

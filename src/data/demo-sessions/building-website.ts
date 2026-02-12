@@ -172,8 +172,10 @@ export const buildingWebsiteSession: AgentSession = {
 
 import { debuggingApiSession } from './debugging-api';
 import { securityAuditSession } from './security-audit';
+import { multiAgentSession } from './multi-agent';
 
 export const demoSessions: AgentSession[] = [
+  multiAgentSession,  // Featured: Multi-agent orchestration
   buildingWebsiteSession,
   debuggingApiSession,
   securityAuditSession,

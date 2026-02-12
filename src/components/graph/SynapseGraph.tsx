@@ -16,45 +16,93 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useSynapseStore } from '@/lib/store';
 import { SynapseNode } from './nodes/SynapseNode';
-import { AgentEvent, SynapseNodeData, EVENT_COLORS } from '@/lib/types';
+import { AgentEvent, SynapseNodeData, EVENT_COLORS, AgentInfo, AGENT_COLORS, AgentSession } from '@/lib/types';
 
 const nodeTypes = {
   synapse: SynapseNode,
 };
 
-// Layout algorithm: HORIZONTAL timeline with branching
-function layoutEvents(events: AgentEvent[], currentIndex: number): { nodes: Node[]; edges: Edge[] } {
+// Get agent info for an event
+function getAgentForEvent(event: AgentEvent, session: AgentSession): AgentInfo | undefined {
+  if (!session.isMultiAgent || !session.agents || !event.agentId) return undefined;
+  return session.agents.find(a => a.id === event.agentId);
+}
+
+// Layout algorithm: HORIZONTAL timeline with AGENT LANES for multi-agent sessions
+function layoutEvents(
+  events: AgentEvent[], 
+  currentIndex: number, 
+  session: AgentSession
+): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   
-  const HORIZONTAL_SPACING = 350; // Space between nodes horizontally
-  const VERTICAL_SPACING = 150;   // Space for branching vertically
+  const HORIZONTAL_SPACING = 350;
+  const VERTICAL_SPACING = 200;
   const START_X = 100;
   const START_Y = 300;
   
-  // Track vertical offset for branching
-  const mainY = START_Y;
+  // For multi-agent: assign vertical lanes to each agent
+  const agentLanes: Record<string, number> = {};
+  if (session.isMultiAgent && session.agents) {
+    session.agents.forEach((agent, idx) => {
+      agentLanes[agent.id] = idx;
+    });
+  }
+  
+  // Track horizontal position per agent (for staggering within lanes)
+  const agentXOffset: Record<string, number> = {};
   
   events.forEach((event, index) => {
-    // Horizontal timeline - each event moves right
-    let x = START_X + index * HORIZONTAL_SPACING;
-    let y = mainY;
+    const agent = getAgentForEvent(event, session);
+    const agentId = event.agentId || 'default';
     
-    // Offset tool_result nodes slightly down to show connection
-    if (event.type === 'tool_result') {
-      y += VERTICAL_SPACING / 2;
-      x -= HORIZONTAL_SPACING / 3; // Bring it back a bit to cluster with tool_call
+    // Initialize agent X offset
+    if (!(agentId in agentXOffset)) {
+      agentXOffset[agentId] = 0;
     }
     
-    // Offset thought/decision nodes slightly up for visual hierarchy
-    if (event.type === 'thought' || event.type === 'decision') {
-      y -= 20;
+    let x: number;
+    let y: number;
+    
+    if (session.isMultiAgent && agent) {
+      // Multi-agent layout: agents in horizontal lanes
+      const laneIndex = agentLanes[agentId] ?? 0;
+      y = START_Y + laneIndex * VERTICAL_SPACING;
+      
+      // X position based on event index within this agent's events
+      x = START_X + agentXOffset[agentId] * HORIZONTAL_SPACING;
+      agentXOffset[agentId]++;
+      
+      // Special handling for spawn_agent - position slightly offset
+      if (event.type === 'spawn_agent') {
+        y -= 30; // Slight upward offset for visual hierarchy
+      }
+      
+      // agent_complete nodes slightly different position
+      if (event.type === 'agent_complete') {
+        y += 20;
+      }
+    } else {
+      // Single agent layout (original behavior)
+      x = START_X + index * HORIZONTAL_SPACING;
+      y = START_Y;
+      
+      if (event.type === 'tool_result') {
+        y += VERTICAL_SPACING / 2;
+        x -= HORIZONTAL_SPACING / 3;
+      }
+      
+      if (event.type === 'thought' || event.type === 'decision') {
+        y -= 20;
+      }
     }
     
     const nodeData: SynapseNodeData = {
       event,
       isActive: index === currentIndex,
       isVisible: index <= currentIndex,
+      agent,
     };
     
     nodes.push({
@@ -65,20 +113,32 @@ function layoutEvents(events: AgentEvent[], currentIndex: number): { nodes: Node
       hidden: index > currentIndex,
     });
     
-    // Create edge to previous event (if not first)
+    // Create edges
     if (index > 0) {
       const prevEvent = events[index - 1];
-      const sourceId = event.parentId || prevEvent.id;
+      let sourceId = event.parentId || prevEvent.id;
+      
+      // Determine edge style based on agent transitions
+      const sourceAgent = events.find(e => e.id === sourceId)?.agentId;
+      const targetAgent = event.agentId;
+      const isCrossAgent = sourceAgent !== targetAgent;
+      
+      // Get colors for edge
+      const agentRole = agent?.role || 'default';
+      const agentColor = AGENT_COLORS[agentRole] || AGENT_COLORS.default;
       
       edges.push({
         id: `e-${sourceId}-${event.id}`,
         source: sourceId,
         target: event.id,
-        type: 'default', // Bezier curve looks better horizontally
+        type: isCrossAgent ? 'smoothstep' : 'default',
         animated: index === currentIndex,
         style: {
-          stroke: index <= currentIndex ? '#6366f1' : '#334155',
-          strokeWidth: 2,
+          stroke: index <= currentIndex 
+            ? (isCrossAgent ? '#ec4899' : agentColor.border.replace('border-', '#').replace('-500', '')) 
+            : '#334155',
+          strokeWidth: isCrossAgent ? 3 : 2,
+          strokeDasharray: isCrossAgent ? '5,5' : undefined,
           strokeLinecap: 'round',
         },
         hidden: index > currentIndex,
@@ -89,7 +149,7 @@ function layoutEvents(events: AgentEvent[], currentIndex: number): { nodes: Node
   return { nodes, edges };
 }
 
-// Inner component that uses useReactFlow (must be inside ReactFlowProvider)
+// Inner component that uses useReactFlow
 function SynapseGraphInner() {
   const { session, playback, selectedEventId, setSelectedEventId } = useSynapseStore();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -107,7 +167,8 @@ function SynapseGraphInner() {
     
     const { nodes: newNodes, edges: newEdges } = layoutEvents(
       session.events,
-      playback.currentEventIndex
+      playback.currentEventIndex,
+      session
     );
     
     setNodes(newNodes);
@@ -118,7 +179,6 @@ function SynapseGraphInner() {
   useEffect(() => {
     if (!session || playback.currentEventIndex < 0) return;
     
-    // Skip auto-pan on initial mount
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
@@ -127,28 +187,19 @@ function SynapseGraphInner() {
     const currentEvent = session.events[playback.currentEventIndex];
     if (!currentEvent) return;
     
-    // Find the node position
-    const HORIZONTAL_SPACING = 350;
-    const START_X = 100;
-    const START_Y = 300;
+    // Find the current node to get its position
+    const currentNode = nodes.find(n => n.id === currentEvent.id);
+    if (!currentNode) return;
     
-    let x = START_X + playback.currentEventIndex * HORIZONTAL_SPACING;
-    let y = START_Y;
+    const { x, y } = currentNode.position;
     
-    // Adjust for special node types
-    if (currentEvent.type === 'tool_result') {
-      y += 75;
-      x -= HORIZONTAL_SPACING / 3;
-    }
-    
-    // Smoothly pan to center on the active node
     const currentZoom = getZoom();
     setCenter(x + 140, y + 60, { 
-      zoom: Math.max(currentZoom, 0.7), // Don't zoom out too much
-      duration: 300 // Faster pan for snappier feel
+      zoom: Math.max(currentZoom, 0.6),
+      duration: 300
     });
     
-  }, [session, playback.currentEventIndex, setCenter, getZoom]);
+  }, [session, playback.currentEventIndex, nodes, setCenter, getZoom]);
   
   // Reset initial mount flag when session changes
   useEffect(() => {
@@ -162,7 +213,17 @@ function SynapseGraphInner() {
   
   // Custom minimap node color
   const minimapNodeColor = useCallback((node: Node) => {
-    const event = (node.data as SynapseNodeData).event;
+    const data = node.data as SynapseNodeData;
+    const event = data.event;
+    const agent = data.agent;
+    
+    // Use agent color if available
+    if (agent?.role) {
+      const agentColor = AGENT_COLORS[agent.role] || AGENT_COLORS.default;
+      return agentColor.glow.replace('rgba(', '#').replace(/,\s*[\d.]+\)/, '');
+    }
+    
+    // Fall back to event type color
     const colors = EVENT_COLORS[event.type];
     const colorMap: Record<string, string> = {
       'border-purple-500': '#8b5cf6',
@@ -174,6 +235,9 @@ function SynapseGraphInner() {
       'border-red-500': '#ef4444',
       'border-slate-500': '#64748b',
       'border-indigo-500': '#6366f1',
+      'border-pink-500': '#ec4899',
+      'border-emerald-500': '#10b981',
+      'border-amber-500': '#f59e0b',
     };
     return colorMap[colors.border] || '#6366f1';
   }, []);
@@ -187,39 +251,65 @@ function SynapseGraphInner() {
   }
   
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onNodeClick={onNodeClick}
-      nodeTypes={nodeTypes}
-      connectionMode={ConnectionMode.Loose}
-      fitView
-      fitViewOptions={{ padding: 0.5, maxZoom: 0.8 }}
-      minZoom={0.1}
-      maxZoom={2}
-      defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
-      proOptions={{ hideAttribution: true }}
-    >
-      <Background 
-        variant={BackgroundVariant.Dots} 
-        gap={20} 
-        size={1} 
-        color="#1e293b" 
-      />
-      <Controls 
-        className="!bg-slate-800 !border-slate-700 !rounded-lg"
-        showInteractive={false}
-      />
-      <MiniMap 
-        nodeColor={minimapNodeColor}
-        maskColor="rgba(0, 0, 0, 0.8)"
-        className="!bg-slate-900 !border-slate-700 !rounded-lg"
-        pannable
-        zoomable
-      />
-    </ReactFlow>
+    <div className="relative w-full h-full">
+      {/* Agent lane labels (for multi-agent sessions) */}
+      {session.isMultiAgent && session.agents && (
+        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+          {session.agents.map((agent, idx) => {
+            const agentColors = AGENT_COLORS[agent.role || 'default'] || AGENT_COLORS.default;
+            return (
+              <div 
+                key={agent.id}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${agentColors.bg} border ${agentColors.border}`}
+              >
+                <div className={`w-2.5 h-2.5 rounded-full ${agentColors.border.replace('border-', 'bg-')}`} />
+                <span className={`text-xs font-semibold ${agentColors.text}`}>
+                  {agent.name}
+                </span>
+              </div>
+            );
+          })}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-pink-900/30 border border-pink-500/50 mt-2">
+            <div className="w-2.5 h-0.5 bg-pink-500" style={{ borderStyle: 'dashed' }} />
+            <span className="text-[10px] text-pink-300">Cross-agent flow</span>
+          </div>
+        </div>
+      )}
+      
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={onNodeClick}
+        nodeTypes={nodeTypes}
+        connectionMode={ConnectionMode.Loose}
+        fitView
+        fitViewOptions={{ padding: 0.5, maxZoom: 0.7 }}
+        minZoom={0.1}
+        maxZoom={2}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.6 }}
+        proOptions={{ hideAttribution: true }}
+      >
+        <Background 
+          variant={BackgroundVariant.Dots} 
+          gap={20} 
+          size={1} 
+          color="#1e293b" 
+        />
+        <Controls 
+          className="!bg-slate-800 !border-slate-700 !rounded-lg"
+          showInteractive={false}
+        />
+        <MiniMap 
+          nodeColor={minimapNodeColor}
+          maskColor="rgba(0, 0, 0, 0.8)"
+          className="!bg-slate-900 !border-slate-700 !rounded-lg"
+          pannable
+          zoomable
+        />
+      </ReactFlow>
+    </div>
   );
 }
 
