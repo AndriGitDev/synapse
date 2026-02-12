@@ -9,8 +9,8 @@ import { SessionSelector } from '@/components/ui/SessionSelector';
 import { EventDetail } from '@/components/ui/EventDetail';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { LiveConnection } from '@/components/live/LiveConnection';
-import { WatchDataLive } from '@/components/live/WatchDataLive';
 import { useSynapseStore } from '@/lib/store';
+import { usePusherWatch } from '@/lib/usePusherWatch';
 import { demoSessions } from '@/data/demo-sessions/building-website';
 import { AgentSession, AgentEvent } from '@/lib/types';
 
@@ -62,15 +62,7 @@ export default function Home() {
   }, [session, selectedEventId]);
   
   // Live mode handlers
-  const handleLiveSessionStart = useCallback((sessionInfo: { id: string; name: string; agent: string }) => {
-    const newSession: AgentSession = {
-      id: sessionInfo.id,
-      name: sessionInfo.name || 'Live Session',
-      description: 'Real-time agent session',
-      agent: sessionInfo.agent as AgentSession['agent'],
-      startedAt: new Date(),
-      events: [],
-    };
+  const handleLiveSessionStart = useCallback((newSession: AgentSession) => {
     setSession(newSession);
     setLiveMode(true);
   }, [setSession, setLiveMode]);
@@ -78,6 +70,13 @@ export default function Home() {
   const handleLiveEvent = useCallback((event: AgentEvent) => {
     addLiveEvent(event);
   }, [addLiveEvent]);
+
+  // Pusher watch mode - connection managed at page level
+  usePusherWatch({
+    enabled: mode === 'watch',
+    onSessionStart: handleLiveSessionStart,
+    onEvent: handleLiveEvent,
+  });
   
   return (
     <div className="flex flex-col h-screen bg-slate-950 text-white overflow-hidden">
@@ -212,12 +211,17 @@ export default function Home() {
           </ReactFlowProvider>
         )}
         
-        {/* Watch Data mode - not connected */}
+        {/* Watch Data mode - waiting for connection */}
         {mode === 'watch' && !session && (
-          <WatchDataLive
-            onSessionStart={handleLiveSessionStart}
-            onEventReceived={handleLiveEvent}
-          />
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-700 border border-violet-500/30 mb-6 animate-pulse">
+                <Eye className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-xl font-semibold mb-2">Connecting to Data...</h2>
+              <p className="text-slate-500">Establishing live connection</p>
+            </div>
+          </div>
         )}
         
         {/* Watch Data mode - connected and receiving */}

@@ -90,12 +90,17 @@ export function WatchDataLive({ onSessionStart, onEventReceived }: WatchDataLive
     setStatus('disconnected');
   }, []);
 
-  // Cleanup on unmount
+  // DON'T cleanup on unmount - the connection should persist when switching to graph view
+  // The connection will be cleaned up when the user explicitly disconnects or leaves the page
   useEffect(() => {
-    return () => {
+    const handleBeforeUnload = () => {
       if (disconnectRef.current) {
         disconnectRef.current();
       }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 
