@@ -1,27 +1,15 @@
 #!/usr/bin/env node
 
 /**
- * ☁️ SYNAPSE Cloud Bridge
+ * ☁️ SYNAPSE Cloud Bridge (JSONL Version)
  * 
  * Streams Clawdbot events to Pusher for real-time public visualization.
- * Anyone with the Synapse URL can watch the agent think live.
- * 
- * Setup:
- *   1. Create a free Pusher account at https://pusher.com
- *   2. Create a new Channels app
- *   3. Set environment variables (or create .env.local):
- *      - PUSHER_APP_ID
- *      - PUSHER_KEY
- *      - PUSHER_SECRET
- *      - PUSHER_CLUSTER
- * 
- * Usage:
- *   node scripts/cloud-bridge.js
  */
 
 const Pusher = require('pusher');
 const fs = require('fs');
 const path = require('path');
+const readline = require('readline');
 
 // === Load environment ===
 try {
@@ -35,9 +23,7 @@ try {
       }
     });
   }
-} catch (e) {
-  // Ignore env loading errors
-}
+} catch (e) {}
 
 // === Configuration ===
 const PUSHER_CONFIG = {
@@ -49,25 +35,11 @@ const PUSHER_CONFIG = {
 };
 
 const CHANNEL_NAME = 'synapse-live';
-const POLL_INTERVAL = 500;
+const POLL_INTERVAL = 300;
 const AGENT_ID = process.env.CLAWDBOT_AGENT || 'main';
 
-// Validate config
 if (!PUSHER_CONFIG.appId || !PUSHER_CONFIG.key || !PUSHER_CONFIG.secret) {
-  console.error(`
-╔══════════════════════════════════════════════════════════════╗
-║  ❌ Missing Pusher Configuration                             ║
-╠══════════════════════════════════════════════════════════════╣
-║  Set these environment variables:                            ║
-║                                                              ║
-║    PUSHER_APP_ID=your_app_id                                 ║
-║    PUSHER_KEY=your_key                                       ║
-║    PUSHER_SECRET=your_secret                                 ║
-║    PUSHER_CLUSTER=eu  (or your cluster)                      ║
-║                                                              ║
-║  Get these from https://dashboard.pusher.com                 ║
-╚══════════════════════════════════════════════════════════════╝
-`);
+  console.error('❌ Missing Pusher config. Set PUSHER_APP_ID, PUSHER_KEY, PUSHER_SECRET');
   process.exit(1);
 }
 
@@ -75,171 +47,33 @@ const pusher = new Pusher(PUSHER_CONFIG);
 
 console.log(`
 ╔══════════════════════════════════════════════════════════════╗
-║  ☁️  SYNAPSE Cloud Bridge                                     ║
+║  ☁️  SYNAPSE Cloud Bridge (JSONL)                             ║
 ╠══════════════════════════════════════════════════════════════╣
-║  Pusher Channel: ${CHANNEL_NAME.padEnd(41)}║
-║  Cluster: ${PUSHER_CONFIG.cluster.padEnd(49)}║
-║  Agent: ${AGENT_ID.padEnd(51)}║
+║  Channel: ${CHANNEL_NAME.padEnd(48)}║
+║  Cluster: ${PUSHER_CONFIG.cluster.padEnd(48)}║
 ╚══════════════════════════════════════════════════════════════╝
 `);
 
-// === Find Clawdbot session directory ===
-function findClawdbotDir() {
-  const home = process.env.HOME || process.env.USERPROFILE;
-  const possiblePaths = [
-    path.join(home, '.clawdbot', 'agents', AGENT_ID),
-    path.join(home, '.clawdbot'),
-    '/root/.clawdbot/agents/main',
-  ];
-  
-  for (const p of possiblePaths) {
-    if (fs.existsSync(p)) return p;
-  }
-  return null;
-}
+// === Find session directory ===
+const sessionsDir = `/root/.clawdbot/agents/${AGENT_ID}/sessions`;
 
-// === Map Clawdbot tools to Synapse event types ===
-function mapToolToEventType(toolName) {
-  const toolMap = {
-    'read': 'file_read',
-    'Read': 'file_read',
-    'write': 'file_write',
-    'Write': 'file_write',
-    'edit': 'file_write',
-    'Edit': 'file_write',
-    'exec': 'tool_call',
-    'process': 'tool_call',
-    'web_search': 'tool_call',
-    'web_fetch': 'tool_call',
-    'browser': 'tool_call',
-    'memory_search': 'thought',
-    'memory_get': 'file_read',
-    'message': 'tool_call',
-    'sessions_spawn': 'spawn_agent',
-  };
-  return toolMap[toolName] || 'tool_call';
-}
-
-// === Parse Clawdbot message into Synapse events ===
-function parseMessage(message, lastEventId) {
-  const events = [];
-  
-  if (message.role === 'user') {
-    // Skip system/heartbeat messages for the live demo
-    const content = typeof message.content === 'string'
-      ? message.content
-      : message.content?.find(b => b.type === 'text')?.text || '';
-    
-    if (content.includes('HEARTBEAT') || content.includes('Cron:')) {
-      return events; // Skip heartbeats and cron messages
-    }
-    
-    events.push({
-      id: `e${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
-      type: 'user_message',
-      content: content.slice(0, 300),
-      parentId: lastEventId,
-      timestamp: new Date().toISOString(),
-    });
-  } else if (message.role === 'assistant') {
-    const blocks = typeof message.content === 'string'
-      ? [{ type: 'text', text: message.content }]
-      : message.content || [];
-    
-    let parentId = lastEventId;
-    
-    for (const block of blocks) {
-      const event = {
-        id: `e${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
-        parentId,
-        timestamp: new Date().toISOString(),
-      };
-      
-      if (block.type === 'thinking' && block.thinking) {
-        event.type = 'thought';
-        event.content = block.thinking.slice(0, 300);
-        events.push(event);
-        parentId = event.id;
-      } else if (block.type === 'text' && block.text) {
-        // Skip NO_REPLY and HEARTBEAT_OK
-        if (block.text.trim() === 'NO_REPLY' || block.text.trim() === 'HEARTBEAT_OK') {
-          continue;
-        }
-        event.type = 'assistant_message';
-        event.content = block.text.slice(0, 300);
-        events.push(event);
-        parentId = event.id;
-      } else if (block.type === 'tool_use' && block.name) {
-        event.id = block.id || event.id;
-        event.type = mapToolToEventType(block.name);
-        event.content = `${block.name}`;
-        event.metadata = { tool: block.name };
-        
-        // Add context based on tool
-        if (block.input?.path) {
-          event.metadata.file = block.input.path;
-          event.content = `Reading ${path.basename(block.input.path)}`;
-        }
-        if (block.input?.file_path) {
-          event.metadata.file = block.input.file_path;
-        }
-        if (block.input?.command) {
-          event.content = `Running: ${String(block.input.command).slice(0, 60)}`;
-        }
-        if (block.input?.query) {
-          event.content = `Searching: ${block.input.query.slice(0, 60)}`;
-        }
-        if (block.input?.url) {
-          event.content = `Fetching: ${block.input.url.slice(0, 60)}`;
-        }
-        if (block.name === 'sessions_spawn') {
-          event.content = `Spawning sub-agent: ${block.input?.task?.slice(0, 60) || 'task'}`;
-        }
-        
-        events.push(event);
-        parentId = event.id;
-      } else if (block.type === 'tool_result') {
-        const content = typeof block.content === 'string'
-          ? block.content
-          : JSON.stringify(block.content);
-        
-        event.type = 'tool_result';
-        event.content = content.slice(0, 200);
-        event.metadata = { 
-          success: !content.toLowerCase().includes('error') && !content.toLowerCase().includes('failed')
-        };
-        event.parentId = block.tool_use_id || parentId;
-        events.push(event);
-        parentId = event.id;
-      }
-    }
-  }
-  
-  return events;
-}
-
-// === Session State ===
-const clawdbotDir = findClawdbotDir();
-if (!clawdbotDir) {
-  console.error('❌ Could not find Clawdbot directory');
+if (!fs.existsSync(sessionsDir)) {
+  console.error('❌ Sessions directory not found:', sessionsDir);
   process.exit(1);
 }
 
-console.log(`📁 Watching: ${clawdbotDir}`);
+console.log(`📁 Watching: ${sessionsDir}`);
 
-let lastMessageCount = 0;
-let lastEventId = null;
+// === State ===
 let currentSessionFile = null;
-let currentSessionId = null;
-let isSessionActive = false;
+let lastLineCount = 0;
+let lastEventId = null;
+let sessionStarted = false;
 
-// Find the most recent session file
+// === Find most recent session ===
 function findCurrentSession() {
-  const sessionsDir = path.join(clawdbotDir, 'sessions');
-  if (!fs.existsSync(sessionsDir)) return null;
-  
   const files = fs.readdirSync(sessionsDir)
-    .filter(f => f.endsWith('.json'))
+    .filter(f => f.endsWith('.jsonl') && !f.endsWith('.lock'))
     .map(f => ({
       name: f,
       path: path.join(sessionsDir, f),
@@ -250,96 +84,204 @@ function findCurrentSession() {
   return files[0]?.path || null;
 }
 
-// Publish event to Pusher
-async function publishEvent(eventType, data) {
+// === Map to Synapse event types ===
+function mapToolToEventType(toolName) {
+  const map = {
+    'Read': 'file_read', 'read': 'file_read',
+    'Write': 'file_write', 'write': 'file_write',
+    'Edit': 'file_write', 'edit': 'file_write',
+    'exec': 'tool_call', 'process': 'tool_call',
+    'web_search': 'tool_call', 'web_fetch': 'tool_call',
+    'browser': 'tool_call', 'message': 'tool_call',
+    'sessions_spawn': 'spawn_agent',
+  };
+  return map[toolName] || 'tool_call';
+}
+
+// === Parse JSONL line to Synapse events ===
+function parseLine(line) {
+  const events = [];
+  
+  try {
+    const data = JSON.parse(line);
+    if (data.type !== 'message') return events;
+    
+    const msg = data.message;
+    if (!msg) return events;
+    
+    const baseEvent = {
+      parentId: lastEventId,
+      timestamp: new Date().toISOString(),
+    };
+    
+    if (msg.role === 'user') {
+      // Skip system messages
+      const content = Array.isArray(msg.content) 
+        ? msg.content.find(b => b.type === 'text')?.text 
+        : msg.content;
+      
+      if (!content || content.includes('HEARTBEAT') || content.includes('[Cron') || content.includes('System:')) {
+        return events;
+      }
+      
+      events.push({
+        ...baseEvent,
+        id: `e${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        type: 'user_message',
+        content: String(content).slice(0, 200),
+      });
+    }
+    else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
+      for (const block of msg.content) {
+        const event = {
+          ...baseEvent,
+          id: `e${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        };
+        
+        if (block.type === 'thinking' && block.thinking) {
+          event.type = 'thought';
+          event.content = block.thinking.slice(0, 250);
+          events.push(event);
+        }
+        else if (block.type === 'text' && block.text) {
+          if (block.text.trim() === 'NO_REPLY' || block.text.trim() === 'HEARTBEAT_OK') continue;
+          event.type = 'assistant_message';
+          event.content = block.text.slice(0, 250);
+          events.push(event);
+        }
+        else if (block.type === 'toolCall' && block.name) {
+          event.id = block.id || event.id;
+          event.type = mapToolToEventType(block.name);
+          event.metadata = { tool: block.name };
+          
+          const args = block.arguments || {};
+          if (args.path || args.file_path) {
+            event.content = `Reading ${path.basename(args.path || args.file_path)}`;
+            event.metadata.file = args.path || args.file_path;
+          } else if (args.command) {
+            event.content = `$ ${String(args.command).slice(0, 80)}`;
+          } else if (args.query) {
+            event.content = `🔍 ${args.query.slice(0, 80)}`;
+          } else if (args.url) {
+            event.content = `🌐 ${args.url.slice(0, 80)}`;
+          } else {
+            event.content = `${block.name}`;
+          }
+          events.push(event);
+        }
+      }
+    }
+    else if (msg.role === 'toolResult') {
+      const content = Array.isArray(msg.content) 
+        ? msg.content.find(b => b.type === 'text')?.text 
+        : String(msg.content);
+      
+      events.push({
+        ...baseEvent,
+        id: `e${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        type: 'tool_result',
+        content: String(content || '').slice(0, 150),
+        metadata: { success: !String(content).toLowerCase().includes('error') },
+        parentId: msg.toolCallId || lastEventId,
+      });
+    }
+  } catch (e) {
+    // Ignore parse errors
+  }
+  
+  return events;
+}
+
+// === Publish to Pusher ===
+async function publish(eventType, data) {
   try {
     await pusher.trigger(CHANNEL_NAME, eventType, data);
     return true;
-  } catch (err) {
-    console.error(`❌ Pusher error: ${err.message}`);
+  } catch (e) {
+    console.error('❌ Pusher error:', e.message);
     return false;
   }
 }
 
-// Poll for changes
-async function pollSession() {
+// === Read new lines from file ===
+async function processNewLines() {
   const sessionFile = findCurrentSession();
+  if (!sessionFile) return;
   
-  if (!sessionFile) {
-    setTimeout(pollSession, POLL_INTERVAL);
-    return;
+  // Session changed
+  if (sessionFile !== currentSessionFile) {
+    console.log(`📂 Session: ${path.basename(sessionFile)}`);
+    currentSessionFile = sessionFile;
+    lastLineCount = 0;
+    lastEventId = null;
+    sessionStarted = false;
   }
   
-  // Detect session change
-  if (sessionFile !== currentSessionFile) {
-    const sessionId = path.basename(sessionFile, '.json');
-    console.log(`📂 New session: ${sessionId}`);
-    currentSessionFile = sessionFile;
-    currentSessionId = sessionId;
-    lastMessageCount = 0;
-    lastEventId = null;
-    
-    // Notify of new session
-    await publishEvent('session-start', {
+  // Count lines
+  const content = fs.readFileSync(sessionFile, 'utf-8');
+  const lines = content.trim().split('\n');
+  
+  if (lines.length <= lastLineCount) return;
+  
+  // Start session on first new activity
+  if (!sessionStarted) {
+    await publish('session-start', {
       session: {
-        id: sessionId,
+        id: path.basename(sessionFile, '.jsonl'),
         name: '🤖 Data (Live)',
         agent: 'clawdbot',
         startedAt: new Date().toISOString(),
       }
     });
-    isSessionActive = true;
+    sessionStarted = true;
+    console.log('✅ Session started');
   }
   
-  try {
-    const data = JSON.parse(fs.readFileSync(sessionFile, 'utf-8'));
-    const messages = data.messages || [];
+  // Process new lines
+  const newLines = lines.slice(lastLineCount);
+  
+  for (const line of newLines) {
+    if (!line.trim()) continue;
     
-    // Process new messages
-    if (messages.length > lastMessageCount) {
-      const newMessages = messages.slice(lastMessageCount);
+    const events = parseLine(line);
+    
+    for (const event of events) {
+      const preview = event.content.slice(0, 50).replace(/\n/g, ' ');
+      console.log(`📤 ${event.type}: ${preview}...`);
       
-      for (const message of newMessages) {
-        const events = parseMessage(message, lastEventId);
-        
-        for (const event of events) {
-          const preview = event.content.slice(0, 40).replace(/\n/g, ' ');
-          console.log(`📤 ${event.type}: ${preview}...`);
-          
-          await publishEvent('event', { event });
-          lastEventId = event.id;
-          
-          // Small delay between events for visual effect
-          await new Promise(r => setTimeout(r, 50));
-        }
-      }
+      await publish('event', { event });
+      lastEventId = event.id;
       
-      lastMessageCount = messages.length;
+      // Tiny delay for visual effect
+      await new Promise(r => setTimeout(r, 30));
     }
-  } catch (err) {
-    // File might be mid-write, ignore
   }
   
-  setTimeout(pollSession, POLL_INTERVAL);
+  lastLineCount = lines.length;
 }
 
-// Graceful shutdown
+// === Main loop ===
+async function poll() {
+  await processNewLines();
+  setTimeout(poll, POLL_INTERVAL);
+}
+
+// === Graceful shutdown ===
 process.on('SIGINT', async () => {
   console.log('\n👋 Shutting down...');
-  if (isSessionActive) {
-    await publishEvent('session-end', { sessionId: currentSessionId });
+  if (sessionStarted) {
+    await publish('session-end', {});
   }
   process.exit(0);
 });
 
-// Start polling
-pollSession();
+process.on('SIGTERM', async () => {
+  if (sessionStarted) {
+    await publish('session-end', {});
+  }
+  process.exit(0);
+});
 
-console.log(`
-🎯 Bridge is running!
-   
-   Events will be pushed to Pusher channel: ${CHANNEL_NAME}
-   Anyone with SYNAPSE can watch at: https://synapse.andri.is
-   
-   Press Ctrl+C to stop.
-`);
+// Start
+poll();
+console.log('🎯 Bridge running! Watching for activity...\n');
