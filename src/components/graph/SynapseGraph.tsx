@@ -38,8 +38,8 @@ function layoutMultiAgent(
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   
-  const VERTICAL_SPACING = 150;
-  const HORIZONTAL_SPACING = 400;
+  const VERTICAL_SPACING = 200;
+  const HORIZONTAL_SPACING = 480;
   const START_X = 500;
   const START_Y = 100;
   
@@ -150,8 +150,8 @@ function layoutSingleAgent(
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   
-  const HORIZONTAL_SPACING = 350;
-  const VERTICAL_SPACING = 150;
+  const HORIZONTAL_SPACING = 420;
+  const VERTICAL_SPACING = 180;
   const START_X = 100;
   const START_Y = 300;
   

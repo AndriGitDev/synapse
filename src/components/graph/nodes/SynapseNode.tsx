@@ -62,8 +62,8 @@ function SynapseNodeComponent({ data, selected }: NodeProps<SynapseNodeData>) {
   const agentColors = AGENT_COLORS[agentRole] || AGENT_COLORS.default;
   
   // Truncate content for display
-  const displayContent = event.content.length > 80 
-    ? event.content.slice(0, 80) + '...' 
+  const displayContent = event.content.length > 140 
+    ? event.content.slice(0, 140) + '...' 
     : event.content;
   
   // Format tool name if present
@@ -84,7 +84,7 @@ function SynapseNodeComponent({ data, selected }: NodeProps<SynapseNodeData>) {
         ease: [0.23, 1, 0.32, 1]
       }}
       className={`
-        min-w-[220px] max-w-[280px] rounded-xl overflow-hidden
+        min-w-[280px] max-w-[360px] rounded-xl overflow-hidden
         ${isActive ? 'ring-2 ring-purple-400/50 ring-offset-2 ring-offset-slate-950' : ''}
         ${selected ? 'ring-2 ring-indigo-400/50 ring-offset-2 ring-offset-slate-950' : ''}
         ${isFinal ? 'ring-2 ring-emerald-400/70 ring-offset-2 ring-offset-slate-950' : ''}
