@@ -96,11 +96,18 @@ function SynapseNodeComponent({ data, selected }: NodeProps<SynapseNodeData>) {
           : '0 4px 20px rgba(0, 0, 0, 0.3)'
       }}
     >
-      {/* Input handle */}
+      {/* Input handles - Left for horizontal, Top for vertical */}
       <Handle
         type="target"
         position={Position.Left}
+        id="left"
         className="!bg-slate-500 !w-2.5 !h-2.5 !border-2 !border-slate-700 !-left-1"
+      />
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="top"
+        className="!bg-slate-500 !w-2.5 !h-2.5 !border-2 !border-slate-700 !-top-1"
       />
       
       {/* Agent badge (if multi-agent session) */}
@@ -184,11 +191,18 @@ function SynapseNodeComponent({ data, selected }: NodeProps<SynapseNodeData>) {
         )}
       </div>
       
-      {/* Output handle */}
+      {/* Output handles - Right for horizontal, Bottom for vertical */}
       <Handle
         type="source"
         position={Position.Right}
+        id="right"
         className="!bg-slate-500 !w-2.5 !h-2.5 !border-2 !border-slate-700 !-right-1"
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom"
+        className="!bg-slate-500 !w-2.5 !h-2.5 !border-2 !border-slate-700 !-bottom-1"
       />
     </motion.div>
   );

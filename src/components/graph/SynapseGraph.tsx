@@ -28,8 +28,8 @@ function getAgentForEvent(event: AgentEvent, session: AgentSession): AgentInfo |
   return session.agents.find(a => a.id === event.agentId);
 }
 
-// Layout algorithm: HORIZONTAL timeline with AGENT LANES for multi-agent sessions
-function layoutEvents(
+// Layout algorithm for MULTI-AGENT: VERTICAL flow with horizontal branches
+function layoutMultiAgent(
   events: AgentEvent[], 
   currentIndex: number, 
   session: AgentSession
@@ -37,65 +37,54 @@ function layoutEvents(
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   
-  const HORIZONTAL_SPACING = 350;
-  const VERTICAL_SPACING = 200;
-  const START_X = 100;
-  const START_Y = 300;
+  const VERTICAL_SPACING = 150;
+  const HORIZONTAL_SPACING = 400;
+  const START_X = 500;
+  const START_Y = 100;
   
-  // For multi-agent: assign vertical lanes to each agent
+  // Assign horizontal lanes to each agent (orchestrator in center, others branch out)
   const agentLanes: Record<string, number> = {};
-  if (session.isMultiAgent && session.agents) {
-    session.agents.forEach((agent, idx) => {
-      agentLanes[agent.id] = idx;
+  if (session.agents) {
+    const orchestratorId = session.agents.find(a => a.role === 'orchestrator')?.id;
+    let leftIdx = -1;
+    let rightIdx = 1;
+    
+    session.agents.forEach((agent) => {
+      if (agent.id === orchestratorId) {
+        agentLanes[agent.id] = 0; // Center
+      } else if (leftIdx * -1 <= rightIdx) {
+        agentLanes[agent.id] = leftIdx;
+        leftIdx--;
+      } else {
+        agentLanes[agent.id] = rightIdx;
+        rightIdx++;
+      }
     });
   }
   
-  // Track horizontal position per agent (for staggering within lanes)
-  const agentXOffset: Record<string, number> = {};
+  // Track Y position per agent
+  const agentYOffset: Record<string, number> = {};
+  let globalY = 0;
   
   events.forEach((event, index) => {
     const agent = getAgentForEvent(event, session);
-    const agentId = event.agentId || 'default';
+    const agentId = event.agentId || 'orchestrator';
     
-    // Initialize agent X offset
-    if (!(agentId in agentXOffset)) {
-      agentXOffset[agentId] = 0;
+    // Initialize agent Y offset
+    if (!(agentId in agentYOffset)) {
+      agentYOffset[agentId] = globalY;
     }
     
-    let x: number;
-    let y: number;
+    const laneIndex = agentLanes[agentId] ?? 0;
+    const x = START_X + laneIndex * HORIZONTAL_SPACING;
+    const y = START_Y + agentYOffset[agentId] * VERTICAL_SPACING;
     
-    if (session.isMultiAgent && agent) {
-      // Multi-agent layout: agents in horizontal lanes
-      const laneIndex = agentLanes[agentId] ?? 0;
-      y = START_Y + laneIndex * VERTICAL_SPACING;
-      
-      // X position based on event index within this agent's events
-      x = START_X + agentXOffset[agentId] * HORIZONTAL_SPACING;
-      agentXOffset[agentId]++;
-      
-      // Special handling for spawn_agent - position slightly offset
-      if (event.type === 'spawn_agent') {
-        y -= 30; // Slight upward offset for visual hierarchy
-      }
-      
-      // agent_complete nodes slightly different position
-      if (event.type === 'agent_complete') {
-        y += 20;
-      }
-    } else {
-      // Single agent layout (original behavior)
-      x = START_X + index * HORIZONTAL_SPACING;
-      y = START_Y;
-      
-      if (event.type === 'tool_result') {
-        y += VERTICAL_SPACING / 2;
-        x -= HORIZONTAL_SPACING / 3;
-      }
-      
-      if (event.type === 'thought' || event.type === 'decision') {
-        y -= 20;
-      }
+    // Increment Y for this agent
+    agentYOffset[agentId]++;
+    
+    // Also advance global Y for spawn events to keep flow logical
+    if (event.type === 'spawn_agent' || event.type === 'agent_complete') {
+      globalY = Math.max(globalY, agentYOffset[agentId]);
     }
     
     const nodeData: SynapseNodeData = {
@@ -114,16 +103,11 @@ function layoutEvents(
     });
     
     // Create edges
-    if (index > 0) {
-      const prevEvent = events[index - 1];
-      let sourceId = event.parentId || prevEvent.id;
+    if (index > 0 && event.parentId) {
+      const sourceId = event.parentId;
+      const sourceEvent = events.find(e => e.id === sourceId);
+      const isCrossAgent = sourceEvent?.agentId !== event.agentId;
       
-      // Determine edge style based on agent transitions
-      const sourceAgent = events.find(e => e.id === sourceId)?.agentId;
-      const targetAgent = event.agentId;
-      const isCrossAgent = sourceAgent !== targetAgent;
-      
-      // Get colors for edge
       const agentRole = agent?.role || 'default';
       const agentColor = AGENT_COLORS[agentRole] || AGENT_COLORS.default;
       
@@ -131,7 +115,9 @@ function layoutEvents(
         id: `e-${sourceId}-${event.id}`,
         source: sourceId,
         target: event.id,
-        type: isCrossAgent ? 'smoothstep' : 'default',
+        sourceHandle: isCrossAgent ? 'right' : 'bottom',  // Vertical: bottom, Cross-agent: right
+        targetHandle: isCrossAgent ? 'left' : 'top',      // Vertical: top, Cross-agent: left
+        type: 'smoothstep',
         animated: index === currentIndex,
         style: {
           stroke: index <= currentIndex 
@@ -147,6 +133,85 @@ function layoutEvents(
   });
   
   return { nodes, edges };
+}
+
+// Layout algorithm for SINGLE-AGENT: HORIZONTAL timeline
+function layoutSingleAgent(
+  events: AgentEvent[], 
+  currentIndex: number
+): { nodes: Node[]; edges: Edge[] } {
+  const nodes: Node[] = [];
+  const edges: Edge[] = [];
+  
+  const HORIZONTAL_SPACING = 350;
+  const VERTICAL_SPACING = 150;
+  const START_X = 100;
+  const START_Y = 300;
+  
+  events.forEach((event, index) => {
+    let x = START_X + index * HORIZONTAL_SPACING;
+    let y = START_Y;
+    
+    // Offset tool_result nodes slightly down
+    if (event.type === 'tool_result') {
+      y += VERTICAL_SPACING / 2;
+      x -= HORIZONTAL_SPACING / 3;
+    }
+    
+    // Offset thought/decision nodes slightly up
+    if (event.type === 'thought' || event.type === 'decision') {
+      y -= 20;
+    }
+    
+    const nodeData: SynapseNodeData = {
+      event,
+      isActive: index === currentIndex,
+      isVisible: index <= currentIndex,
+    };
+    
+    nodes.push({
+      id: event.id,
+      type: 'synapse',
+      position: { x, y },
+      data: nodeData,
+      hidden: index > currentIndex,
+    });
+    
+    if (index > 0) {
+      const prevEvent = events[index - 1];
+      const sourceId = event.parentId || prevEvent.id;
+      
+      edges.push({
+        id: `e-${sourceId}-${event.id}`,
+        source: sourceId,
+        target: event.id,
+        sourceHandle: 'right',  // Horizontal: right to left
+        targetHandle: 'left',
+        type: 'default',
+        animated: index === currentIndex,
+        style: {
+          stroke: index <= currentIndex ? '#6366f1' : '#334155',
+          strokeWidth: 2,
+          strokeLinecap: 'round',
+        },
+        hidden: index > currentIndex,
+      });
+    }
+  });
+  
+  return { nodes, edges };
+}
+
+// Main layout function - delegates based on session type
+function layoutEvents(
+  events: AgentEvent[], 
+  currentIndex: number, 
+  session: AgentSession
+): { nodes: Node[]; edges: Edge[] } {
+  if (session.isMultiAgent) {
+    return layoutMultiAgent(events, currentIndex, session);
+  }
+  return layoutSingleAgent(events, currentIndex);
 }
 
 // Inner component that uses useReactFlow
@@ -187,7 +252,6 @@ function SynapseGraphInner() {
     const currentEvent = session.events[playback.currentEventIndex];
     if (!currentEvent) return;
     
-    // Find the current node to get its position
     const currentNode = nodes.find(n => n.id === currentEvent.id);
     if (!currentNode) return;
     
@@ -217,13 +281,11 @@ function SynapseGraphInner() {
     const event = data.event;
     const agent = data.agent;
     
-    // Use agent color if available
     if (agent?.role) {
       const agentColor = AGENT_COLORS[agent.role] || AGENT_COLORS.default;
       return agentColor.glow.replace('rgba(', '#').replace(/,\s*[\d.]+\)/, '');
     }
     
-    // Fall back to event type color
     const colors = EVENT_COLORS[event.type];
     const colorMap: Record<string, string> = {
       'border-purple-500': '#8b5cf6',
@@ -252,10 +314,10 @@ function SynapseGraphInner() {
   
   return (
     <div className="relative w-full h-full">
-      {/* Agent lane labels (for multi-agent sessions) */}
+      {/* Agent legend - TOP RIGHT for multi-agent sessions */}
       {session.isMultiAgent && session.agents && (
-        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-          {session.agents.map((agent, idx) => {
+        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+          {session.agents.map((agent) => {
             const agentColors = AGENT_COLORS[agent.role || 'default'] || AGENT_COLORS.default;
             return (
               <div 
@@ -270,8 +332,8 @@ function SynapseGraphInner() {
             );
           })}
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-pink-900/30 border border-pink-500/50 mt-2">
-            <div className="w-2.5 h-0.5 bg-pink-500" style={{ borderStyle: 'dashed' }} />
-            <span className="text-[10px] text-pink-300">Cross-agent flow</span>
+            <div className="w-4 h-0 border-t-2 border-dashed border-pink-500" />
+            <span className="text-[10px] text-pink-300">Cross-agent</span>
           </div>
         </div>
       )}
