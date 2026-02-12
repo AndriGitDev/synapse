@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useCallback } from 'react';
 import { ReactFlowProvider } from 'reactflow';
-import { Brain, Upload, Github, Sparkles, Zap } from 'lucide-react';
+import { Brain, Upload, Github, Sparkles, Zap, Eye } from 'lucide-react';
 import { SynapseGraph } from '@/components/graph/SynapseGraph';
 import { PlaybackControls } from '@/components/controls/PlaybackControls';
 import { SessionSelector } from '@/components/ui/SessionSelector';
 import { EventDetail } from '@/components/ui/EventDetail';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { LiveConnection } from '@/components/live/LiveConnection';
+import { WatchDataLive } from '@/components/live/WatchDataLive';
 import { useSynapseStore } from '@/lib/store';
 import { demoSessions } from '@/data/demo-sessions/building-website';
 import { AgentSession, AgentEvent } from '@/lib/types';
@@ -35,11 +36,11 @@ export default function Home() {
   }, [mode, session, setSession]);
   
   // Handle mode change
-  const handleModeChange = (newMode: 'demo' | 'upload' | 'live') => {
+  const handleModeChange = (newMode: 'demo' | 'upload' | 'live' | 'watch') => {
     setMode(newMode);
     reset();
     setSelectedEventId(null);
-    setLiveMode(newMode === 'live');
+    setLiveMode(newMode === 'live' || newMode === 'watch');
     if (newMode === 'demo') {
       setSession(demoSessions[0]);
     } else {
@@ -135,6 +136,17 @@ export default function Home() {
             <Zap className="w-3.5 h-3.5" />
             Live
           </button>
+          <button
+            onClick={() => handleModeChange('watch')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              mode === 'watch' 
+                ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-violet-500/20' 
+                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            Watch Data
+          </button>
         </div>
         
         {/* GitHub link */}
@@ -200,6 +212,21 @@ export default function Home() {
           </ReactFlowProvider>
         )}
         
+        {/* Watch Data mode - not connected */}
+        {mode === 'watch' && !session && (
+          <WatchDataLive
+            onSessionStart={handleLiveSessionStart}
+            onEventReceived={handleLiveEvent}
+          />
+        )}
+        
+        {/* Watch Data mode - connected and receiving */}
+        {mode === 'watch' && session && (
+          <ReactFlowProvider>
+            <SynapseGraph />
+          </ReactFlowProvider>
+        )}
+        
         {/* Session selector (demo mode) */}
         {mode === 'demo' && (
           <div className="absolute top-4 left-4 z-10">
@@ -231,6 +258,26 @@ export default function Home() {
           </div>
         )}
         
+        {/* Watch Data mode session info */}
+        {mode === 'watch' && session && (
+          <div className="absolute top-4 left-4 z-10">
+            <div className="flex items-center gap-3 bg-slate-900/90 backdrop-blur-xl border border-violet-500/30 rounded-xl px-4 py-3">
+              <div className="relative">
+                <div className="p-2 bg-violet-500/20 rounded-lg border border-violet-500/20">
+                  <Eye className="w-4 h-4 text-violet-400" />
+                </div>
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-violet-500 rounded-full animate-pulse" />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-white">{session.name}</div>
+                <div className="text-[11px] text-slate-500">
+                  {session.events.length} events · Watching Data
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Event detail panel */}
         <EventDetail 
           event={selectedEvent} 
@@ -246,8 +293,8 @@ export default function Home() {
         )}
       </main>
       
-      {/* Playback controls - not shown in live mode while receiving */}
-      {session && mode !== 'live' && <PlaybackControls />}
+      {/* Playback controls - not shown in live/watch mode while receiving */}
+      {session && mode !== 'live' && mode !== 'watch' && <PlaybackControls />}
       
       {/* Live mode mini controls */}
       {session && mode === 'live' && (
@@ -260,6 +307,22 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               <span className="text-sm text-green-400">Streaming</span>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Watch Data mode mini controls */}
+      {session && mode === 'watch' && (
+        <div className="bg-slate-900/95 backdrop-blur-xl border-t border-violet-900/50 px-4 py-3">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="font-mono text-slate-300">{session.events.length}</span>
+              <span className="text-slate-600">events from Data</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-violet-500 rounded-full animate-pulse" />
+              <span className="text-sm text-violet-400">Watching Live</span>
             </div>
           </div>
         </div>

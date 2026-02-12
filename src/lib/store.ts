@@ -28,8 +28,8 @@ interface SynapseStore {
   setSelectedEventId: (id: string | null) => void;
   
   // Mode
-  mode: 'demo' | 'upload' | 'live';
-  setMode: (mode: 'demo' | 'upload' | 'live') => void;
+  mode: 'demo' | 'upload' | 'live' | 'watch';
+  setMode: (mode: 'demo' | 'upload' | 'live' | 'watch') => void;
   
   // Live mode state
   isLiveMode: boolean;

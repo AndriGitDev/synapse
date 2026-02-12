@@ -11,9 +11,11 @@ SYNAPSE visualizes AI agent decision-making in real-time. See every thought, too
 - **🎬 Demo Mode** — Pre-loaded sessions showing AI agents in action
 - **📤 Upload Mode** — Drag & drop your Clawdbot session files
 - **⚡ Live Mode** — Real-time WebSocket streaming from any agent
+- **👁️ Watch Data** — See Data (the AI) think in real-time via cloud relay
 - **🎨 Beautiful Graph** — React Flow-powered interactive visualization
 - **▶️ Playback Controls** — Play, pause, step through at 1-8x speed
 - **🔍 Event Details** — Click any node for full context
+- **🤖 Multi-Agent** — Visualize orchestrators spawning sub-agents
 
 ## 🚀 Quick Start
 
@@ -42,9 +44,10 @@ Open [http://localhost:3000](http://localhost:3000) and hit play!
 
 ## 📊 Demo Sessions
 
-1. **Building a Landing Page** — Watch an AI create a website from scratch
-2. **Debugging a 500 Error** — Follow along as bugs get squashed
-3. **Security Vulnerability Scan** — See an AI audit code for security issues
+1. **Multi-Agent Orchestration** — Watch an orchestrator delegate to specialized sub-agents
+2. **Building a Landing Page** — Watch an AI create a website from scratch
+3. **Debugging a 500 Error** — Follow along as bugs get squashed
+4. **Security Vulnerability Scan** — See an AI audit code for security issues
 
 ## 🤖 The Story
 
@@ -64,6 +67,49 @@ Open [http://localhost:3000](http://localhost:3000) and hit play!
 | Animation | Framer Motion |
 | State | Zustand |
 | Deployment | Vercel |
+
+## 👁️ Watch Data Live (Cloud Relay)
+
+The "Watch Data" mode lets anyone watch Data (the AI) think in real-time via Pusher.
+
+### Setup (Site Admin)
+
+1. Create a free [Pusher](https://pusher.com) account
+2. Create a new Channels app
+3. Copy `.env.example` to `.env.local` and fill in your credentials:
+
+```bash
+# Server-side (for cloud-bridge.js)
+PUSHER_APP_ID=your_app_id
+PUSHER_KEY=your_key
+PUSHER_SECRET=your_secret
+PUSHER_CLUSTER=eu
+
+# Client-side (for Next.js)
+NEXT_PUBLIC_PUSHER_KEY=your_key
+NEXT_PUBLIC_PUSHER_CLUSTER=eu
+```
+
+4. Run the cloud bridge alongside Clawdbot:
+
+```bash
+node scripts/cloud-bridge.js
+```
+
+5. Visitors can now click "Watch Data" and see live activity!
+
+### How It Works
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Clawdbot   │ ──▶ │   Pusher    │ ──▶ │   SYNAPSE   │
+│  (Agent)    │     │   (Cloud)   │     │  (Viewers)  │
+└─────────────┘     └─────────────┘     └─────────────┘
+       │                                       │
+       └── cloud-bridge.js polls ──────────────┘
+           session files & pushes              watches channel
+           events to Pusher                    for live events
+```
 
 ## 📁 Project Structure
 
