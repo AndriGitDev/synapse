@@ -69,6 +69,7 @@ export interface SynapseNodeData {
   isActive: boolean;
   isVisible: boolean;
   agent?: AgentInfo;
+  isFinal?: boolean;  // True for the last event in non-live mode
 }
 
 // Color scheme for different event types

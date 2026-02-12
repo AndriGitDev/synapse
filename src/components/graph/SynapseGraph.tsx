@@ -32,7 +32,8 @@ function getAgentForEvent(event: AgentEvent, session: AgentSession): AgentInfo |
 function layoutMultiAgent(
   events: AgentEvent[], 
   currentIndex: number, 
-  session: AgentSession
+  session: AgentSession,
+  isLiveMode: boolean
 ): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
@@ -87,11 +88,16 @@ function layoutMultiAgent(
       globalY = Math.max(globalY, agentYOffset[agentId]);
     }
     
+    // Mark final node only in non-live mode
+    const isLastEvent = index === events.length - 1;
+    const isFinal = isLastEvent && !isLiveMode;
+    
     const nodeData: SynapseNodeData = {
       event,
       isActive: index === currentIndex,
       isVisible: index <= currentIndex,
       agent,
+      isFinal,
     };
     
     nodes.push({
@@ -138,7 +144,8 @@ function layoutMultiAgent(
 // Layout algorithm for SINGLE-AGENT: HORIZONTAL timeline
 function layoutSingleAgent(
   events: AgentEvent[], 
-  currentIndex: number
+  currentIndex: number,
+  isLiveMode: boolean
 ): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
@@ -163,10 +170,15 @@ function layoutSingleAgent(
       y -= 20;
     }
     
+    // Mark final node only in non-live mode
+    const isLastEvent = index === events.length - 1;
+    const isFinal = isLastEvent && !isLiveMode;
+    
     const nodeData: SynapseNodeData = {
       event,
       isActive: index === currentIndex,
       isVisible: index <= currentIndex,
+      isFinal,
     };
     
     nodes.push({
@@ -206,17 +218,18 @@ function layoutSingleAgent(
 function layoutEvents(
   events: AgentEvent[], 
   currentIndex: number, 
-  session: AgentSession
+  session: AgentSession,
+  isLiveMode: boolean
 ): { nodes: Node[]; edges: Edge[] } {
   if (session.isMultiAgent) {
-    return layoutMultiAgent(events, currentIndex, session);
+    return layoutMultiAgent(events, currentIndex, session, isLiveMode);
   }
-  return layoutSingleAgent(events, currentIndex);
+  return layoutSingleAgent(events, currentIndex, isLiveMode);
 }
 
 // Inner component that uses useReactFlow
 function SynapseGraphInner() {
-  const { session, playback, selectedEventId, setSelectedEventId } = useSynapseStore();
+  const { session, playback, selectedEventId, setSelectedEventId, isLiveMode } = useSynapseStore();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const { setCenter, getZoom } = useReactFlow();
@@ -233,12 +246,13 @@ function SynapseGraphInner() {
     const { nodes: newNodes, edges: newEdges } = layoutEvents(
       session.events,
       playback.currentEventIndex,
-      session
+      session,
+      isLiveMode
     );
     
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [session, playback.currentEventIndex, setNodes, setEdges]);
+  }, [session, playback.currentEventIndex, isLiveMode, setNodes, setEdges]);
   
   // Auto-pan to follow the active node during playback
   useEffect(() => {

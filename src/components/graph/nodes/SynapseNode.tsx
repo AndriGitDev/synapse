@@ -16,6 +16,7 @@ import {
   Bot,
   Sparkles,
   ArrowRightLeft,
+  Flag,
   LucideIcon
 } from 'lucide-react';
 import { SynapseNodeData, EVENT_COLORS, EventType, AGENT_COLORS } from '@/lib/types';
@@ -51,7 +52,7 @@ const TYPE_LABELS: Record<EventType, string> = {
 };
 
 function SynapseNodeComponent({ data, selected }: NodeProps<SynapseNodeData>) {
-  const { event, isActive, agent } = data;
+  const { event, isActive, agent, isFinal } = data;
   const colors = EVENT_COLORS[event.type];
   const Icon = ICONS[event.type];
   const label = TYPE_LABELS[event.type];
@@ -86,14 +87,17 @@ function SynapseNodeComponent({ data, selected }: NodeProps<SynapseNodeData>) {
         min-w-[220px] max-w-[280px] rounded-xl overflow-hidden
         ${isActive ? 'ring-2 ring-purple-400/50 ring-offset-2 ring-offset-slate-950' : ''}
         ${selected ? 'ring-2 ring-indigo-400/50 ring-offset-2 ring-offset-slate-950' : ''}
+        ${isFinal ? 'ring-2 ring-emerald-400/70 ring-offset-2 ring-offset-slate-950' : ''}
         ${agent ? `border-l-4 ${agentColors.border}` : ''}
         transition-shadow duration-300
         cursor-pointer
       `}
       style={{
-        boxShadow: isActive 
-          ? `0 0 30px ${agent ? agentColors.glow : 'rgba(139, 92, 246, 0.3)'}, 0 4px 20px rgba(0, 0, 0, 0.4)` 
-          : '0 4px 20px rgba(0, 0, 0, 0.3)'
+        boxShadow: isFinal
+          ? '0 0 40px rgba(16, 185, 129, 0.4), 0 4px 20px rgba(0, 0, 0, 0.4)'
+          : isActive 
+            ? `0 0 30px ${agent ? agentColors.glow : 'rgba(139, 92, 246, 0.3)'}, 0 4px 20px rgba(0, 0, 0, 0.4)` 
+            : '0 4px 20px rgba(0, 0, 0, 0.3)'
       }}
     >
       {/* Input handles - Left for horizontal, Top for vertical */}
@@ -190,6 +194,20 @@ function SynapseNodeComponent({ data, selected }: NodeProps<SynapseNodeData>) {
           </div>
         )}
       </div>
+      
+      {/* Final response indicator */}
+      {isFinal && (
+        <motion.div 
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-500/20 border-t border-emerald-500/30"
+        >
+          <Flag className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">
+            Session Complete
+          </span>
+        </motion.div>
+      )}
       
       {/* Output handles - Right for horizontal, Bottom for vertical */}
       <Handle
