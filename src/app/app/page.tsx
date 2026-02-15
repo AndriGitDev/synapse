@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useCallback, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ReactFlowProvider } from 'reactflow';
-import { Brain, Upload, Github, Sparkles, Zap, Eye, Menu, X } from 'lucide-react';
+import { Brain, Upload, Github, Sparkles, Zap, Eye, Menu, X, Play, Pause } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { SynapseGraph } from '@/components/graph/SynapseGraph';
 import { PlaybackControls } from '@/components/controls/PlaybackControls';
 import { SessionSelector } from '@/components/ui/SessionSelector';
@@ -31,7 +32,7 @@ export default function AppPage() {
   const { 
     mode, setMode, session, setSession, reset, 
     selectedEventId, setSelectedEventId,
-    playback, addLiveEvent, setLiveMode,
+    playback, togglePlayback, addLiveEvent, setLiveMode,
   } = useSynapseStore();
   
   // Handle ?mode= query param on mount
@@ -305,10 +306,35 @@ export default function AppPage() {
           <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
             <div className="flex items-center gap-2 px-4 py-2 bg-slate-800/80 backdrop-blur rounded-full border border-slate-700/50 text-sm text-slate-400">
               <Sparkles className="w-4 h-4 text-indigo-400" />
-              Press play or spacebar to start
+              <span className="hidden sm:inline">Press play or spacebar to start</span>
+              <span className="sm:hidden">Tap play to start</span>
             </div>
-            <span className="text-xs text-slate-500">Click any node to see details</span>
+            <span className="text-xs text-slate-500">Tap any node to see details</span>
           </div>
+        )}
+
+        {/* Mobile FAB play/pause button */}
+        {session && mode !== 'live' && mode !== 'watch' && (
+          <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            onClick={togglePlayback}
+            className={`
+              md:hidden fixed bottom-24 right-4 z-30 w-14 h-14 rounded-full flex items-center justify-center
+              shadow-xl transition-all duration-200
+              ${playback.isPlaying
+                ? 'bg-slate-700 shadow-slate-900/50'
+                : 'bg-gradient-to-r from-indigo-600 to-purple-600 shadow-indigo-500/30'
+              }
+            `}
+            aria-label={playback.isPlaying ? 'Pause' : 'Play'}
+          >
+            {playback.isPlaying ? (
+              <Pause className="w-6 h-6 text-white" />
+            ) : (
+              <Play className="w-6 h-6 text-white ml-0.5" />
+            )}
+          </motion.button>
         )}
       </main>
       
