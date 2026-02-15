@@ -83,7 +83,7 @@ export function PlaybackControls() {
   const progress = totalEvents > 0 ? (currentEvent / totalEvents) * 100 : 0;
   
   return (
-    <div className="bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 px-4 py-3">
+    <div className="bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 px-3 sm:px-4 py-2 sm:py-3">
       <div className="max-w-4xl mx-auto">
         {/* Progress bar */}
         {/* Outer touch target (44px min) wrapping the thin visual bar */}
@@ -170,8 +170,8 @@ export function PlaybackControls() {
           </div>
           
           {/* Right: Speed control */}
-          <div className="flex items-center gap-2 min-w-[100px] justify-end">
-            <Gauge className="w-3.5 h-3.5 text-slate-500" />
+          <div className="flex items-center gap-2 min-w-[60px] sm:min-w-[100px] justify-end">
+            <Gauge className="w-3.5 h-3.5 text-slate-500 hidden sm:block" />
             <div className="flex bg-slate-800/80 rounded-lg p-0.5">
               {SPEEDS.map((speed) => (
                 <button

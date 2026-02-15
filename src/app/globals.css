@@ -106,3 +106,22 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid rgba(51, 65, 85, 0.5);
 }
+
+/* ── Landing page graph animation ── */
+@keyframes graph-node-in {
+  0% { opacity: 0; transform: scale(0.7) translateY(8px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes graph-edge-in {
+  0% { opacity: 0; stroke-dashoffset: 200; }
+  100% { opacity: 1; stroke-dashoffset: 0; }
+}
+.graph-node-anim {
+  opacity: 0;
+  animation: graph-node-in 0.5s ease-out forwards;
+}
+.graph-edge-anim {
+  opacity: 0;
+  stroke-dasharray: 200;
+  animation: graph-edge-in 0.5s ease-out forwards;
+}
