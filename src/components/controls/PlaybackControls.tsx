@@ -12,8 +12,8 @@ import {
 } from 'lucide-react';
 import { useSynapseStore } from '@/lib/store';
 
-// Faster speeds - base interval is 600ms at 1x
-const SPEEDS = [1, 2, 4, 8];
+// Playback speeds - base interval is 600ms at 1x
+const SPEEDS = [0.25, 0.5, 1, 2];
 const BASE_INTERVAL = 600; // ms per event at 1x speed
 
 export function PlaybackControls() {
