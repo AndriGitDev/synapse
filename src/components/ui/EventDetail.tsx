@@ -111,7 +111,7 @@ function EventDetailContent({ event, onClose }: { event: AgentEvent; onClose: ()
             <div className="space-y-1.5">
               {event.metadata.tool && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Wrench className="w-3.5 h-3.5 text-slate-600" />
+                  <Wrench className="w-3.5 h-3.5 text-slate-500" />
                   <span className="text-slate-500">Tool</span>
                   <span className="text-slate-300 font-mono text-xs ml-auto bg-slate-800 px-2 py-0.5 rounded">
                     {event.metadata.tool}
@@ -120,7 +120,7 @@ function EventDetailContent({ event, onClose }: { event: AgentEvent; onClose: ()
               )}
               {event.metadata.file && (
                 <div className="flex items-center gap-2 text-sm">
-                  <FileText className="w-3.5 h-3.5 text-slate-600" />
+                  <FileText className="w-3.5 h-3.5 text-slate-500" />
                   <span className="text-slate-500">File</span>
                   <span className="text-cyan-400 font-mono text-xs ml-auto bg-slate-800 px-2 py-0.5 rounded truncate max-w-[140px]">
                     {event.metadata.file}
@@ -129,7 +129,7 @@ function EventDetailContent({ event, onClose }: { event: AgentEvent; onClose: ()
               )}
               {event.metadata.duration && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Clock className="w-3.5 h-3.5 text-slate-600" />
+                  <Clock className="w-3.5 h-3.5 text-slate-500" />
                   <span className="text-slate-500">Duration</span>
                   <span className="text-slate-300 ml-auto">
                     {event.metadata.duration}ms
@@ -151,7 +151,7 @@ function EventDetailContent({ event, onClose }: { event: AgentEvent; onClose: ()
         
         {/* Footer */}
         <div className="pt-3 border-t border-slate-800">
-          <div className="flex items-center justify-between text-[10px] text-slate-600">
+          <div className="flex items-center justify-between text-[10px] text-slate-500">
             <div className="flex items-center gap-1 font-mono">
               <Hash className="w-3 h-3" />
               {event.id}
@@ -161,7 +161,7 @@ function EventDetailContent({ event, onClose }: { event: AgentEvent; onClose: ()
             </div>
           </div>
           {event.parentId && (
-            <div className="flex items-center gap-1 mt-1.5 text-[10px] text-slate-600">
+            <div className="flex items-center gap-1 mt-1.5 text-[10px] text-slate-500">
               <ArrowRight className="w-3 h-3" />
               <span>from</span>
               <span className="font-mono">{event.parentId}</span>
