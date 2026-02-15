@@ -29,8 +29,8 @@ export function usePusherWatch({ enabled, onSessionStart, onEvent }: UsePusherWa
     console.log('[Pusher] Creating session');
     const session: AgentSession = {
       id: `live-${Date.now()}`,
-      name: '🤖 Data (Live)',
-      agent: 'clawdbot',
+      name: '🤖 Bubbi (Live)',
+      agent: 'bubbi',
       startedAt: new Date(),
       events: [],
     };
@@ -77,8 +77,8 @@ export function usePusherWatch({ enabled, onSessionStart, onEvent }: UsePusherWa
       if (!sessionCreatedRef.current) {
         const session: AgentSession = {
           id: data.session.id || `live-${Date.now()}`,
-          name: data.session.name || '🤖 Data (Live)',
-          agent: 'clawdbot',
+          name: data.session.name || '🤖 Bubbi (Live)',
+          agent: 'bubbi',
           startedAt: new Date(),
           events: [],
         };

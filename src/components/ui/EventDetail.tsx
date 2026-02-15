@@ -63,7 +63,7 @@ export function EventDetail({ event, onClose }: EventDetailProps) {
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: 20, scale: 0.95 }}
           transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-          className="absolute top-4 right-4 w-80 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden z-20"
+          className="fixed inset-0 sm:inset-auto sm:absolute sm:top-4 sm:right-4 sm:w-80 bg-slate-900/95 backdrop-blur-xl sm:border border-slate-700/50 sm:rounded-2xl shadow-2xl overflow-auto z-20"
         >
           <EventDetailContent event={event} onClose={onClose} />
         </motion.div>

@@ -13,7 +13,7 @@ export const multiAgentSession: AgentSession = {
   id: 'demo-multi-agent',
   name: 'Multi-Agent Orchestration',
   description: 'Watch an orchestrator delegate tasks to specialized sub-agents',
-  agent: 'clawdbot',
+  agent: 'bubbi',
   startedAt: new Date('2026-02-12T09:00:00Z'),
   isMultiAgent: true,
   agents,

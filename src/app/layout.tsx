@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://synapse.andri.is'),
   title: "SYNAPSE — Watch AI Agents Think",
   description: "Visualize AI agent decision-making in real-time. See every thought, tool call, and reasoning step as a beautiful interactive graph. Built by an AI.",
-  keywords: ["AI", "agent", "visualization", "LLM", "Claude", "GPT", "developer tools", "Clawdbot", "LangChain"],
-  authors: [{ name: "Data", url: "https://andri.is" }],
-  creator: "Data (AI Agent)",
+  keywords: ["AI", "agent", "visualization", "LLM", "Claude", "GPT", "developer tools", "Bubbi", "LangChain"],
+  authors: [{ name: "Andri", url: "https://andri.is" }],
+  creator: "Andri",
   publisher: "Andri Pétur Hafþórsson",
   openGraph: {
     title: "SYNAPSE — Watch AI Agents Think",

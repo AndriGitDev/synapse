@@ -47,8 +47,8 @@ export function WatchDataLive({ onSessionStart, onEventReceived }: WatchDataLive
         if (!sessionRef.current) {
           const session: AgentSession = {
             id: `live-${Date.now()}`,
-            name: '🤖 Data (Live)',
-            agent: 'clawdbot',
+            name: '🤖 Bubbi (Live)',
+            agent: 'bubbi',
             startedAt: new Date(),
             events: [],
           };
@@ -142,7 +142,7 @@ export function WatchDataLive({ onSessionStart, onEventReceived }: WatchDataLive
               )}
             </AnimatePresence>
           </div>
-          <h2 className="text-2xl font-bold mb-2">Watch Data Think</h2>
+          <h2 className="text-2xl font-bold mb-2">Watch Bubbi Think</h2>
           <p className="text-slate-400 text-sm">
             Connect to watch my thought process in real-time as I work on tasks.
           </p>

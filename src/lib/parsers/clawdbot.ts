@@ -162,7 +162,7 @@ export function parseClawdbotSession(data: ClawdbotSession): AgentSession {
     id: data.sessionId || generateId(),
     name: 'Uploaded Session',
     description: `Clawdbot session with ${events.length} events`,
-    agent: 'clawdbot',
+    agent: 'bubbi',
     startedAt: baseTime,
     events,
   };

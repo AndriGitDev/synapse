@@ -5,7 +5,7 @@ export const buildingWebsiteSession: AgentSession = {
   id: 'demo-building-website',
   name: 'Building a Landing Page',
   description: 'Watch an AI agent create a landing page from scratch',
-  agent: 'clawdbot',
+  agent: 'bubbi',
   startedAt: new Date('2026-02-07T10:00:00Z'),
   events: [
     {
