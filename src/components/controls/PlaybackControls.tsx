@@ -86,8 +86,9 @@ export function PlaybackControls() {
     <div className="bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 px-4 py-3">
       <div className="max-w-4xl mx-auto">
         {/* Progress bar */}
+        {/* Outer touch target (44px min) wrapping the thin visual bar */}
         <div 
-          className="relative h-1.5 bg-slate-800 rounded-full mb-3 cursor-pointer group"
+          className="relative h-1.5 bg-slate-800 rounded-full mb-3 cursor-pointer group before:absolute before:-top-5 before:-bottom-5 before:left-0 before:right-0 before:content-['']"
           onClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
             const percent = (e.clientX - rect.left) / rect.width;
@@ -118,7 +119,7 @@ export function PlaybackControls() {
             <span className="font-mono text-slate-300">
               {currentEvent > 0 ? currentEvent : '—'}
             </span>
-            <span className="text-slate-600">/</span>
+            <span className="text-slate-500">/</span>
             <span className="font-mono text-slate-500">{totalEvents}</span>
           </div>
           
@@ -170,7 +171,7 @@ export function PlaybackControls() {
           
           {/* Right: Speed control */}
           <div className="flex items-center gap-2 min-w-[100px] justify-end">
-            <Gauge className="w-3.5 h-3.5 text-slate-600" />
+            <Gauge className="w-3.5 h-3.5 text-slate-500" />
             <div className="flex bg-slate-800/80 rounded-lg p-0.5">
               {SPEEDS.map((speed) => (
                 <button

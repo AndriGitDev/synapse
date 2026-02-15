@@ -93,7 +93,7 @@ export function SessionSelector({ sessions, currentSession, onSelect }: SessionS
                         {session.description}
                       </div>
                     </div>
-                    <div className="text-[11px] text-slate-600 tabular-nums">
+                    <div className="text-[11px] text-slate-500 tabular-nums">
                       {session.events.length}
                     </div>
                   </button>

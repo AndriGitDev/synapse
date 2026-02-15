@@ -221,7 +221,7 @@ export function WatchDataLive({ onSessionStart, onEventReceived }: WatchDataLive
 
         {/* Hint */}
         <div className="mt-6 text-center">
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-slate-500">
             Events stream in real-time via Pusher
           </p>
         </div>

@@ -89,16 +89,19 @@ export default function LandingPage() {
               { icon: Brain, label: 'Synapse', desc: 'Renders the graph', color: 'from-indigo-500 to-purple-500' },
               { icon: Users, label: 'Viewers', desc: 'Watch in real-time', color: 'from-emerald-500 to-green-500' },
             ].map((step, i) => (
-              <div key={step.label} className="flex items-center gap-4 sm:gap-6">
+              <div key={step.label} className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                 <div className="flex flex-col items-center text-center w-28">
                   <div className={`p-3 rounded-xl bg-gradient-to-br ${step.color} mb-3 shadow-lg`}>
                     <step.icon className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-sm font-semibold">{step.label}</div>
-                  <div className="text-[11px] text-slate-500">{step.desc}</div>
+                  <div className="text-[11px] text-slate-400">{step.desc}</div>
                 </div>
                 {i < 3 && (
-                  <ArrowRight className="w-5 h-5 text-slate-600 hidden sm:block flex-shrink-0" />
+                  <>
+                    <ArrowRight className="w-5 h-5 text-slate-600 hidden sm:block flex-shrink-0" />
+                    <ArrowRight className="w-5 h-5 text-slate-600 sm:hidden flex-shrink-0 rotate-90" />
+                  </>
                 )}
               </div>
             ))}
@@ -142,7 +145,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-6 border-t border-slate-800/50 text-center text-sm text-slate-600">
+      <footer className="py-8 px-6 border-t border-slate-800/50 text-center text-sm text-slate-500">
         <div className="flex items-center justify-center gap-4">
           <a href="https://andri.is" target="_blank" rel="noopener noreferrer" className="hover:text-slate-400 transition-colors">
             Built by Andri

@@ -106,7 +106,7 @@ export default function AppPage() {
               SYNAPSE
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium">BETA</span>
             </h1>
-            <p className="text-[11px] text-slate-500">Watch AI Agents Think</p>
+            <p className="text-[11px] text-slate-400">Watch AI Agents Think</p>
           </div>
         </Link>
         
@@ -129,7 +129,7 @@ export default function AppPage() {
               <m.icon className="w-3.5 h-3.5" />
               {m.label}
               {m.prominent && isLiveStreaming && (
-                <span className="w-2 h-2 bg-violet-400 rounded-full animate-pulse" />
+                <span className="w-2 h-2 bg-violet-400 rounded-full animate-pulse-soft" />
               )}
             </button>
           ))}
@@ -268,11 +268,11 @@ export default function AppPage() {
                 <div className="p-2 bg-green-500/20 rounded-lg border border-green-500/20">
                   <Zap className="w-4 h-4 text-green-400" />
                 </div>
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse-soft" />
               </div>
               <div>
                 <div className="text-sm font-medium text-white">{session.name}</div>
-                <div className="text-[11px] text-slate-500">{session.events.length} events · Live</div>
+                <div className="text-[11px] text-slate-400">{session.events.length} events · Live</div>
               </div>
             </div>
           </div>
@@ -285,11 +285,11 @@ export default function AppPage() {
                 <div className="p-2 bg-violet-500/20 rounded-lg border border-violet-500/20">
                   <Eye className="w-4 h-4 text-violet-400" />
                 </div>
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-violet-500 rounded-full animate-pulse" />
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-violet-500 rounded-full animate-pulse-soft" />
               </div>
               <div>
                 <div className="text-sm font-medium text-white">{session.name}</div>
-                <div className="text-[11px] text-slate-500">{session.events.length} events · Watching Bubbi</div>
+                <div className="text-[11px] text-slate-400">{session.events.length} events · Watching Bubbi</div>
               </div>
             </div>
           </div>
@@ -302,9 +302,12 @@ export default function AppPage() {
         />
         
         {session && playback.currentEventIndex < 0 && mode !== 'live' && mode !== 'watch' && (
-          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-slate-800/80 backdrop-blur rounded-full border border-slate-700/50 text-sm text-slate-400">
-            <Sparkles className="w-4 h-4 text-indigo-400" />
-            Press play or spacebar to start
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+            <div className="flex items-center gap-2 px-4 py-2 bg-slate-800/80 backdrop-blur rounded-full border border-slate-700/50 text-sm text-slate-400">
+              <Sparkles className="w-4 h-4 text-indigo-400" />
+              Press play or spacebar to start
+            </div>
+            <span className="text-xs text-slate-500">Click any node to see details</span>
           </div>
         )}
       </main>
@@ -316,10 +319,10 @@ export default function AppPage() {
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
               <span className="font-mono text-slate-300">{session.events.length}</span>
-              <span className="text-slate-600">events received</span>
+              <span className="text-slate-500">events received</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse-soft" />
               <span className="text-sm text-green-400">Streaming</span>
             </div>
           </div>
@@ -331,10 +334,10 @@ export default function AppPage() {
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
               <span className="font-mono text-slate-300">{session.events.length}</span>
-              <span className="text-slate-600">events from Bubbi</span>
+              <span className="text-slate-500">events from Bubbi</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-violet-500 rounded-full animate-pulse" />
+              <span className="w-2 h-2 bg-violet-500 rounded-full animate-pulse-soft" />
               <span className="text-sm text-violet-400">Watching Live</span>
             </div>
           </div>
