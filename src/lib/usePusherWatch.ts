@@ -12,16 +12,18 @@ interface UsePusherWatchProps {
   enabled: boolean;
   onSessionStart: (session: AgentSession) => void;
   onEvent: (event: AgentEvent) => void;
+  onTriggerAccepted?: (data: { hint: string }) => void;
+  onTriggerRejected?: (data: { reason: string; message: string; retryAfter?: number }) => void;
 }
 
-export function usePusherWatch({ enabled, onSessionStart, onEvent }: UsePusherWatchProps) {
+export function usePusherWatch({ enabled, onSessionStart, onEvent, onTriggerAccepted, onTriggerRejected }: UsePusherWatchProps) {
   const pusherRef = useRef<Pusher | null>(null);
   const channelRef = useRef<ReturnType<Pusher['subscribe']> | null>(null);
   const sessionCreatedRef = useRef(false);
-  const callbacksRef = useRef({ onSessionStart, onEvent });
+  const callbacksRef = useRef({ onSessionStart, onEvent, onTriggerAccepted, onTriggerRejected });
   
   // Keep callbacks fresh
-  callbacksRef.current = { onSessionStart, onEvent };
+  callbacksRef.current = { onSessionStart, onEvent, onTriggerAccepted, onTriggerRejected };
 
   const createSession = useCallback(() => {
     if (sessionCreatedRef.current) return;
@@ -85,6 +87,16 @@ export function usePusherWatch({ enabled, onSessionStart, onEvent }: UsePusherWa
         callbacksRef.current.onSessionStart(session);
         sessionCreatedRef.current = true;
       }
+    });
+
+    channel.bind('trigger-accepted', (data: { hint: string }) => {
+      console.log('[Pusher] ✅ trigger-accepted:', data.hint);
+      callbacksRef.current.onTriggerAccepted?.(data);
+    });
+
+    channel.bind('trigger-rejected', (data: { reason: string; message: string; retryAfter?: number }) => {
+      console.log('[Pusher] ⚠️ trigger-rejected:', data.reason);
+      callbacksRef.current.onTriggerRejected?.(data);
     });
 
     channel.bind('event', (data: { event: AgentEvent }) => {

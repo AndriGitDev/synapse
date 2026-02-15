@@ -11,6 +11,7 @@ import { SessionSelector } from '@/components/ui/SessionSelector';
 import { EventDetail } from '@/components/ui/EventDetail';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { LiveConnection } from '@/components/live/LiveConnection';
+import { TriggerButton } from '@/components/ui/TriggerButton';
 import { useSynapseStore } from '@/lib/store';
 import { usePusherWatch } from '@/lib/usePusherWatch';
 import { demoSessions } from '@/data/demo-sessions/building-website';
@@ -237,11 +238,15 @@ export default function AppPage() {
               <p className="text-slate-500 mb-6">
                 Listening for live events. When Bubbi starts working on a task, you&apos;ll see the thought process unfold here in real-time.
               </p>
-              <div className="flex items-center justify-center gap-1.5">
+              <div className="flex items-center justify-center gap-1.5 mb-6">
                 <span className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                 <span className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                 <span className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
+              <TriggerButton />
+              <p className="text-xs text-slate-600 mt-4 max-w-xs">
+                Bubbi automatically works on tasks every few hours. Or trigger one now!
+              </p>
             </div>
           </div>
         )}
@@ -362,9 +367,12 @@ export default function AppPage() {
               <span className="font-mono text-slate-300">{session.events.length}</span>
               <span className="text-slate-500">events from Bubbi</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-violet-500 rounded-full animate-pulse-soft" />
-              <span className="text-sm text-violet-400">Watching Live</span>
+            <div className="flex items-center gap-4">
+              <TriggerButton />
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-violet-500 rounded-full animate-pulse-soft" />
+                <span className="text-sm text-violet-400">Watching Live</span>
+              </div>
             </div>
           </div>
         </div>
