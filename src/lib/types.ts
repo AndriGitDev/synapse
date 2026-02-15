@@ -47,7 +47,7 @@ export interface AgentSession {
   id: string;
   name: string;
   description?: string;
-  agent: 'clawdbot' | 'langchain' | 'crewai' | 'claude' | 'generic';
+  agent: 'bubbi' | 'clawdbot' | 'langchain' | 'crewai' | 'claude' | 'generic';
   startedAt: Date;
   endedAt?: Date;
   events: AgentEvent[];

@@ -5,7 +5,7 @@ export const debuggingApiSession: AgentSession = {
   id: 'demo-debugging-api',
   name: 'Debugging a 500 Error',
   description: 'Watch an AI agent diagnose and fix a production API bug',
-  agent: 'clawdbot',
+  agent: 'bubbi',
   startedAt: new Date('2026-02-07T14:00:00Z'),
   events: [
     {
