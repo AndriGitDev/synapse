@@ -15,14 +15,14 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://synapse.andri.is'),
   title: "SYNAPSE — Watch AI Agents Think",
-  description: "Visualize AI agent decision-making in real-time. See every thought, tool call, and reasoning step as a beautiful interactive graph. Built by an AI.",
+  description: "Visualize OpenClaw AI agent reasoning in real-time. See every thought, tool call, and reasoning step as a beautiful interactive graph. Built by an AI.",
   keywords: ["AI", "agent", "visualization", "LLM", "Claude", "GPT", "developer tools", "Bubbi", "LangChain"],
   authors: [{ name: "Andri", url: "https://andri.is" }],
   creator: "Andri",
   publisher: "Andri Pétur Hafþórsson",
   openGraph: {
     title: "SYNAPSE — Watch AI Agents Think",
-    description: "Visualize AI agent decision-making in real-time. See every thought, tool call, and reasoning step.",
+    description: "Visualize OpenClaw AI agent reasoning in real-time. See every thought, tool call, and reasoning step.",
     type: "website",
     url: "https://synapse.andri.is",
     siteName: "SYNAPSE",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "SYNAPSE — Watch AI Agents Think",
-    description: "Visualize AI agent decision-making in real-time. Built by an AI.",
+    description: "Visualize OpenClaw AI agent reasoning in real-time. Built by an AI.",
     images: ["/og-image.png"],
   },
   robots: {

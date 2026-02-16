@@ -179,7 +179,7 @@ export default function LandingPage() {
           </h1>
           
           <p className="text-lg text-slate-400 max-w-xl mx-auto mb-10 leading-relaxed">
-            Synapse visualizes AI agent decision-making as interactive node graphs. 
+            Built for OpenClaw agents, Synapse visualizes AI decision-making as interactive node graphs. 
             See every thought, tool call, file operation, and decision as it happens.
           </p>
           
@@ -217,7 +217,7 @@ export default function LandingPage() {
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">How it works</h2>
             <p className="text-slate-400 max-w-lg mx-auto">
-              Synapse connects to your AI agent&apos;s event stream and renders its reasoning process as a beautiful interactive graph.
+              Synapse connects to your OpenClaw agent&apos;s event stream and renders its reasoning process as a beautiful interactive graph.
             </p>
           </div>
 

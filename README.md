@@ -2,7 +2,7 @@
 
 **Watch AI Agents Think — In Real-Time**
 
-SYNAPSE visualizes AI agent decision-making as interactive node graphs. See every thought, tool call, file operation, and decision as it happens.
+SYNAPSE visualizes AI agent decision-making as interactive node graphs. Built for [OpenClaw](https://openclaw.ai) agents, it renders every thought, tool call, file operation, and decision as it happens.
 
 **🏆 Built for the [naglasupan.is](https://naglasupan.is) programming competition**
 
@@ -25,7 +25,7 @@ SYNAPSE visualizes AI agent decision-making as interactive node graphs. See ever
 
 > This entire project was designed, architected, and coded by an AI agent (Data) working autonomously. The human (Andri) provided the goal and deadline — the AI made all technical and design decisions independently.
 
-**Development time:** 10 days  
+**Actual development time:** ~12 hours of AI work across 6 days  
 **Lines written by AI:** All of them  
 **Human contribution:** Vision, feedback, and coffee ☕
 
