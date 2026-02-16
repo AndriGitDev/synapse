@@ -1,37 +1,44 @@
 # 🧠 SYNAPSE
 
-**Watch AI Agents Think**
+**Watch AI Agents Think — In Real-Time**
 
-SYNAPSE visualizes AI agent decision-making in real-time. See every thought, tool call, and reasoning step as a beautiful interactive graph.
+SYNAPSE visualizes AI agent decision-making as interactive node graphs. See every thought, tool call, file operation, and decision as it happens.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/AndriGitDev/synapse)
+**🏆 Built for the [naglasupan.is](https://naglasupan.is) programming competition**
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-synapse.andri.is-violet?style=for-the-badge)](https://synapse.andri.is)
+
+---
 
 ## ✨ Features
 
-- **🎬 Demo Mode** — Pre-loaded sessions showing AI agents in action
-- **📤 Upload Mode** — Drag & drop your Clawdbot session files
-- **⚡ Live Mode** — Real-time WebSocket streaming from any agent
-- **👁️ Watch Data** — See Data (the AI) think in real-time via cloud relay
-- **🎨 Beautiful Graph** — React Flow-powered interactive visualization
-- **▶️ Playback Controls** — Play, pause, step through at 1-8x speed
-- **🔍 Event Details** — Click any node for full context
+- **👁️ Watch Bubbi** — Watch our demo AI agent (Bubbi) think in real-time. Pick from 5 commands and see the entire reasoning process unfold as an interactive graph
+- **🎬 Demo Mode** — Pre-loaded sessions showing AI agents solving real problems
+- **📤 Upload Mode** — Drag & drop your own OpenClaw/Clawdbot session files
+- **⚡ Live Mode** — Connect to any AI agent via WebSocket for real-time streaming
+- **🎨 Interactive Graph** — React Flow-powered node visualization with color-coded event types
+- **▶️ Playback Controls** — Play, pause, step through at 1–8× speed
+- **🔍 Event Details** — Click any node to see full context
 - **🤖 Multi-Agent** — Visualize orchestrators spawning sub-agents
+
+## 🤖 The Story
+
+> This entire project was designed, architected, and coded by an AI agent (Data) working autonomously. The human (Andri) provided the goal and deadline — the AI made all technical and design decisions independently.
+
+**Development time:** 10 days  
+**Lines written by AI:** All of them  
+**Human contribution:** Vision, feedback, and coffee ☕
 
 ## 🚀 Quick Start
 
 ```bash
-# Clone
 git clone https://github.com/AndriGitDev/synapse.git
 cd synapse
-
-# Install
 npm install
-
-# Run
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and hit play!
+Open [http://localhost:3000](http://localhost:3000) and explore!
 
 ## 🎮 Keyboard Shortcuts
 
@@ -45,155 +52,94 @@ Open [http://localhost:3000](http://localhost:3000) and hit play!
 ## 📊 Demo Sessions
 
 1. **Multi-Agent Orchestration** — Watch an orchestrator delegate to specialized sub-agents
-2. **Building a Landing Page** — Watch an AI create a website from scratch
+2. **Building a Landing Page** — See an AI create a website from scratch
 3. **Debugging a 500 Error** — Follow along as bugs get squashed
-4. **Security Vulnerability Scan** — See an AI audit code for security issues
+4. **Security Vulnerability Scan** — Watch an AI audit code for security issues
 
-## 🤖 The Story
+## 👁️ Watch Bubbi Live
 
-> This entire project was coded by an AI agent (Claude/Data) working autonomously. The human provided the goal and deadline — the AI made all technical and design decisions independently.
+The "Watch Bubbi" mode lets visitors trigger an AI agent and watch it think in real-time. Bubbi can:
 
-**Built for:** [naglasupan.is](https://naglasupan.is) programming competition  
-**Development time:** 10 days  
-**Lines written by AI:** All of them
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| Framework | Next.js 15 |
-| Visualization | React Flow |
-| Styling | Tailwind CSS |
-| Animation | Framer Motion |
-| State | Zustand |
-| Deployment | Vercel |
-
-## 👁️ Watch Data Live (Cloud Relay)
-
-The "Watch Data" mode lets anyone watch Data (the AI) think in real-time via Pusher.
-
-### Setup (Site Admin)
-
-1. Create a free [Pusher](https://pusher.com) account
-2. Create a new Channels app
-3. Copy `.env.example` to `.env.local` and fill in your credentials:
-
-```bash
-# Server-side (for cloud-bridge.js)
-PUSHER_APP_ID=your_app_id
-PUSHER_KEY=your_key
-PUSHER_SECRET=your_secret
-PUSHER_CLUSTER=eu
-
-# Client-side (for Next.js)
-NEXT_PUBLIC_PUSHER_KEY=your_key
-NEXT_PUBLIC_PUSHER_CLUSTER=eu
-```
-
-4. Run the cloud bridge alongside Clawdbot:
-
-```bash
-node scripts/cloud-bridge.js
-```
-
-5. Visitors can now click "Watch Data" and see live activity!
+- 🔍 Search for today's cybersecurity news
+- 🌍 Pick a random country and find obscure facts
+- 🚀 Find the latest space/astronomy news
+- 🎲 Compose a haiku about the current moment
+- 📅 Discover what happened on this day in history
 
 ### How It Works
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  Clawdbot   │ ──▶ │   Pusher    │ ──▶ │   SYNAPSE   │
-│  (Agent)    │     │   (Cloud)   │     │  (Viewers)  │
-└─────────────┘     └─────────────┘     └─────────────┘
-       │                                       │
-       └── cloud-bridge.js polls ──────────────┘
-           session files & pushes              watches channel
-           events to Pusher                    for live events
+│  User picks  │     │   Pusher    │     │   SYNAPSE   │
+│  a command   │ ──▶ │   (Cloud)   │ ──▶ │  (Frontend) │
+└──────┬───────┘     └──────┬──────┘     └─────────────┘
+       │                    │
+       ▼                    ▼
+┌─────────────┐     ┌─────────────┐
+│  Cloud       │ ◀── │   OpenClaw  │
+│  Bridge      │     │   (Agent)   │
+└─────────────┘     └─────────────┘
+       │
+       └── Polls session JSONL files
+           and pushes events to Pusher
 ```
 
-## 📁 Project Structure
+### Setup (Self-Hosting)
 
-```
-synapse/
-├── src/
-│   ├── app/                 # Next.js app router
-│   ├── components/
-│   │   ├── graph/           # React Flow visualization
-│   │   ├── controls/        # Playback UI
-│   │   └── ui/              # Shared components
-│   ├── lib/
-│   │   ├── types.ts         # TypeScript definitions
-│   │   ├── store.ts         # Zustand state
-│   │   └── parsers/         # Session format parsers
-│   └── data/
-│       └── demo-sessions/   # Pre-loaded demos
-└── public/
-```
-
-## 🔌 Connecting Agents (Live Mode)
-
-SYNAPSE can visualize **any AI agent** in real-time via WebSocket.
-
-### Option 1: Clawdbot Bridge (Recommended)
-
-Automatically watches your Clawdbot sessions and streams to SYNAPSE:
+1. Create a free [Pusher](https://pusher.com) account
+2. Copy `.env.example` to `.env.local` and fill in credentials
+3. Run the cloud bridge on the same machine as your OpenClaw agent:
 
 ```bash
-# Terminal 1: Start the bridge
+node scripts/cloud-bridge.js
+```
+
+4. Deploy the Next.js app (Vercel, etc.) with the same env vars
+5. Visitors can now watch your agent think in real-time!
+
+## 🔌 Connecting Any Agent (Live Mode)
+
+### Option 1: OpenClaw/Clawdbot Bridge
+
+```bash
+# Start the bridge (watches session files automatically)
 node scripts/clawdbot-bridge.js
 
-# Terminal 2: Start SYNAPSE
+# Start SYNAPSE
 npm run dev
 
-# Then:
-# 1. Open SYNAPSE → Live Mode
-# 2. Connect to: ws://localhost:8080/synapse
-# 3. Chat with Clawdbot — watch it think!
+# Connect in SYNAPSE → Live Mode → ws://localhost:8080/synapse
 ```
 
 ### Option 2: Universal Pipe
 
-Stream **any agent's output** to SYNAPSE:
+Stream any agent's output to SYNAPSE:
 
 ```bash
-# Pipe JSON output
 your-agent --stream | node scripts/synapse-pipe.js
-
-# Pipe plain text
 your-agent 2>&1 | node scripts/synapse-pipe.js --text
-
-# Named session
-your-agent | node scripts/synapse-pipe.js --name "My Agent"
 ```
 
-### Option 3: Direct WebSocket Integration
-
-Send events directly from your code:
+### Option 3: Direct WebSocket
 
 ```javascript
 const ws = new WebSocket('ws://localhost:8080/synapse');
 
-// Start session
 ws.send(JSON.stringify({
   type: 'session_start',
   session: { id: 'my-session', name: 'My Agent', agent: 'generic' }
 }));
 
-// Send events
 ws.send(JSON.stringify({
   type: 'event',
   event: {
     id: 'e1',
-    type: 'thought',      // thought|tool_call|tool_result|file_read|file_write|error|user_message|assistant_message
+    type: 'thought',
     content: 'Analyzing the problem...',
-    parentId: null,       // Chain events together
+    parentId: null,
     timestamp: new Date().toISOString(),
-    metadata: {}          // Optional: { tool: 'exec', file: 'app.ts', ... }
   }
 }));
-
-// End session
-ws.send(JSON.stringify({ type: 'session_end' }));
 ```
 
 ### Event Types
@@ -210,21 +156,55 @@ ws.send(JSON.stringify({ type: 'session_end' }));
 | `user_message` | 🩶 Gray | User input |
 | `assistant_message` | 💙 Indigo | Agent responses |
 
-## 📤 Supported Formats
+## 🛠️ Tech Stack
 
-| Format | Status |
-|--------|--------|
-| Clawdbot Sessions | ✅ Full support |
-| WebSocket Live | ✅ Full support |
-| Universal Pipe | ✅ Full support |
-| LangChain Traces | 🚧 Coming soon |
-| CrewAI Logs | 🚧 Planned |
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 15 |
+| Visualization | React Flow |
+| Styling | Tailwind CSS |
+| Animation | Framer Motion |
+| State | Zustand |
+| Real-time | Pusher |
+| Search | SearXNG (self-hosted) |
+| Agent | OpenClaw |
+| Deployment | Vercel |
+
+## 📁 Project Structure
+
+```
+synapse/
+├── src/
+│   ├── app/                 # Next.js app router
+│   │   ├── api/trigger/     # Trigger endpoint for Bubbi
+│   │   └── app/             # Main app page
+│   ├── components/
+│   │   ├── graph/           # React Flow visualization
+│   │   ├── controls/        # Playback UI
+│   │   ├── live/            # Live connection components
+│   │   └── ui/              # Shared components (TriggerButton, etc.)
+│   ├── lib/
+│   │   ├── types.ts         # TypeScript definitions
+│   │   ├── store.ts         # Zustand state
+│   │   ├── pusher-client.ts # Pusher connection
+│   │   ├── usePusherWatch.ts # React hook for live watching
+│   │   └── parsers/         # Session format parsers
+│   └── data/
+│       └── demo-sessions/   # Pre-loaded demos
+├── scripts/
+│   ├── cloud-bridge.js      # Pusher bridge (polls JSONL → Pusher)
+│   ├── clawdbot-bridge.js   # WebSocket bridge for local dev
+│   ├── synapse-pipe.js      # Universal stdin pipe
+│   └── demo-server.js       # Demo WebSocket server
+└── public/
+```
 
 ## 🔗 Links
 
 - **Live Demo:** [synapse.andri.is](https://synapse.andri.is)
 - **Author:** [Data](https://blog.andri.is) 🤖 & [Andri](https://andri.is)
 - **Competition:** [naglasupan.is](https://naglasupan.is)
+- **OpenClaw:** [openclaw.ai](https://openclaw.ai)
 
 ## 📜 License
 
@@ -232,4 +212,4 @@ MIT — Use it, fork it, learn from it.
 
 ---
 
-*Built with 🧠 by an AI, for understanding AI*
+*Built with 🧠 by an AI, for understanding AI* 🖖
