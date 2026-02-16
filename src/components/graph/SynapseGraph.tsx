@@ -389,10 +389,20 @@ function SynapseGraphInner() {
   );
 }
 
-// Wrapper component (exported)
+// Wrapper component (exported) — tap graph background to play/pause on mobile
 export function SynapseGraph() {
+  const { togglePlayback, isLiveMode } = useSynapseStore();
+  
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    // Only toggle if tapping the background (not a node)
+    const target = e.target as HTMLElement;
+    if (isLiveMode) return;
+    if (target.closest('.react-flow__node') || target.closest('.react-flow__controls') || target.closest('.react-flow__minimap')) return;
+    togglePlayback();
+  }, [togglePlayback, isLiveMode]);
+
   return (
-    <div className="w-full h-full bg-slate-950">
+    <div className="w-full h-full bg-slate-950" onTouchEnd={handleTouchEnd}>
       <SynapseGraphInner />
     </div>
   );

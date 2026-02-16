@@ -45,8 +45,8 @@ export function connectToLiveStream(callbacks: LiveCallbacks): () => void {
       console.log('[Pusher] Creating default session');
       const session: AgentSession = {
         id: `live-${Date.now()}`,
-        name: '🤖 Data (Live)',
-        agent: 'clawdbot',
+        name: '🤖 Bubbi (Live)',
+        agent: 'bubbi',
         startedAt: new Date(),
         events: [],
       };
@@ -77,8 +77,8 @@ export function connectToLiveStream(callbacks: LiveCallbacks): () => void {
     console.log('[Pusher] 📦 Received session-start:', data);
     const session: AgentSession = {
       id: data.session.id || `live-${Date.now()}`,
-      name: data.session.name || '🤖 Data (Live)',
-      agent: 'clawdbot',
+      name: data.session.name || '🤖 Bubbi (Live)',
+      agent: 'bubbi',
       startedAt: new Date(data.session.startedAt || Date.now()),
       events: [],
     };

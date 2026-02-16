@@ -39,7 +39,7 @@ interface SynapseStore {
 const initialPlaybackState: PlaybackState = {
   isPlaying: false,
   currentEventIndex: -1,
-  speed: 2, // Default to 2x for snappier feel
+  speed: 0.5, // Default to 0.5x for demo mode (leisurely pace)
   visibleEvents: [],
 };
 
@@ -170,7 +170,13 @@ export const useSynapseStore = create<SynapseStore>((set, get) => ({
   
   // Mode
   mode: 'demo',
-  setMode: (mode) => set({ mode }),
+  setMode: (mode) => set((state) => ({
+    mode,
+    playback: {
+      ...state.playback,
+      speed: (mode === 'live' || mode === 'watch') ? 1 : 0.5,
+    },
+  })),
   
   // Live mode
   isLiveMode: false,

@@ -5,7 +5,7 @@ export const securityAuditSession: AgentSession = {
   id: 'demo-security-audit',
   name: 'Security Vulnerability Scan',
   description: 'Watch an AI audit a codebase for security issues',
-  agent: 'clawdbot',
+  agent: 'bubbi',
   startedAt: new Date('2026-02-09T09:00:00Z'),
   events: [
     {

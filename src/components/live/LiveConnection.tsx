@@ -191,7 +191,7 @@ export function LiveConnection({ onSessionStart, onEventReceived }: LiveConnecti
 
         {/* Help text */}
         <div className="mt-6 text-center">
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-slate-500">
             Compatible with Clawdbot&apos;s SYNAPSE output mode
           </p>
         </div>

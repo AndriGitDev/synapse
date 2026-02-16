@@ -63,7 +63,7 @@ export function EventDetail({ event, onClose }: EventDetailProps) {
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: 20, scale: 0.95 }}
           transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-          className="absolute top-4 right-4 w-80 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden z-20"
+          className="fixed inset-0 sm:inset-auto sm:absolute sm:top-4 sm:right-4 sm:w-80 bg-slate-900/95 backdrop-blur-xl sm:border border-slate-700/50 sm:rounded-2xl shadow-2xl overflow-auto z-20"
         >
           <EventDetailContent event={event} onClose={onClose} />
         </motion.div>
@@ -111,7 +111,7 @@ function EventDetailContent({ event, onClose }: { event: AgentEvent; onClose: ()
             <div className="space-y-1.5">
               {event.metadata.tool && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Wrench className="w-3.5 h-3.5 text-slate-600" />
+                  <Wrench className="w-3.5 h-3.5 text-slate-500" />
                   <span className="text-slate-500">Tool</span>
                   <span className="text-slate-300 font-mono text-xs ml-auto bg-slate-800 px-2 py-0.5 rounded">
                     {event.metadata.tool}
@@ -120,7 +120,7 @@ function EventDetailContent({ event, onClose }: { event: AgentEvent; onClose: ()
               )}
               {event.metadata.file && (
                 <div className="flex items-center gap-2 text-sm">
-                  <FileText className="w-3.5 h-3.5 text-slate-600" />
+                  <FileText className="w-3.5 h-3.5 text-slate-500" />
                   <span className="text-slate-500">File</span>
                   <span className="text-cyan-400 font-mono text-xs ml-auto bg-slate-800 px-2 py-0.5 rounded truncate max-w-[140px]">
                     {event.metadata.file}
@@ -129,7 +129,7 @@ function EventDetailContent({ event, onClose }: { event: AgentEvent; onClose: ()
               )}
               {event.metadata.duration && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Clock className="w-3.5 h-3.5 text-slate-600" />
+                  <Clock className="w-3.5 h-3.5 text-slate-500" />
                   <span className="text-slate-500">Duration</span>
                   <span className="text-slate-300 ml-auto">
                     {event.metadata.duration}ms
@@ -151,7 +151,7 @@ function EventDetailContent({ event, onClose }: { event: AgentEvent; onClose: ()
         
         {/* Footer */}
         <div className="pt-3 border-t border-slate-800">
-          <div className="flex items-center justify-between text-[10px] text-slate-600">
+          <div className="flex items-center justify-between text-[10px] text-slate-500">
             <div className="flex items-center gap-1 font-mono">
               <Hash className="w-3 h-3" />
               {event.id}
@@ -161,7 +161,7 @@ function EventDetailContent({ event, onClose }: { event: AgentEvent; onClose: ()
             </div>
           </div>
           {event.parentId && (
-            <div className="flex items-center gap-1 mt-1.5 text-[10px] text-slate-600">
+            <div className="flex items-center gap-1 mt-1.5 text-[10px] text-slate-500">
               <ArrowRight className="w-3 h-3" />
               <span>from</span>
               <span className="font-mono">{event.parentId}</span>
