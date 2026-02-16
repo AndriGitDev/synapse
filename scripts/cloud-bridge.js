@@ -55,7 +55,7 @@ console.log(`
 `);
 
 // === Find session directory ===
-const sessionsDir = `/root/.clawdbot/agents/${AGENT_ID}/sessions`;
+const sessionsDir = `/root/.openclaw/agents/${AGENT_ID}/sessions`;
 
 if (!fs.existsSync(sessionsDir)) {
   console.error('❌ Sessions directory not found:', sessionsDir);
