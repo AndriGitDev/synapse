@@ -21,21 +21,29 @@ export async function POST(req: NextRequest) {
     if (now - last < 30_000) {
       const retryAfter = Math.ceil((30_000 - (now - last)) / 1000);
       return NextResponse.json(
-        { error: `Please wait ${retryAfter}s before triggering again` },
+        { error: 'rate_limited', retryAfter },
         { status: 429 }
       );
     }
 
-    const { taskIndex } = await req.json();
-
-    if (typeof taskIndex !== 'number' || taskIndex < 0 || taskIndex > 4) {
-      return NextResponse.json({ error: 'Invalid task index' }, { status: 400 });
+    // Parse body - taskIndex is optional (defaults to random on bridge side)
+    let taskIndex: number | undefined;
+    try {
+      const body = await req.json();
+      if (typeof body.taskIndex === 'number' && body.taskIndex >= 0 && body.taskIndex <= 4) {
+        taskIndex = body.taskIndex;
+      }
+    } catch {
+      // No body or invalid JSON — that's fine, bridge picks random
     }
 
     ipLastTrigger.set(ip, now);
 
-    // Send trigger event to the control channel — the bridge will pick it up
-    await pusher.trigger('synapse-control', 'trigger-task', { taskIndex });
+    // Send trigger event to the control channel — the bridge picks it up
+    await pusher.trigger('synapse-control', 'trigger-task', { 
+      taskIndex: taskIndex ?? undefined,
+      timestamp: new Date().toISOString(),
+    });
 
     return NextResponse.json({ ok: true });
   } catch (err: unknown) {
