@@ -107,7 +107,6 @@ export function TriggerButton({ onTriggerRejected }: TriggerButtonProps) {
             >
               <div className="px-3 py-2 border-b border-slate-700/50">
                 <p className="text-[11px] text-slate-500 font-medium uppercase tracking-wider">Choose a task for Bubbi</p>
-                <p className="text-[10px] text-slate-600 mt-1">Bubbi runs on free-tier models with rate limits — expect 1–3 min for full responses.</p>
               </div>
               {DEMO_COMMANDS.map((cmd, i) => (
                 <button
@@ -184,6 +183,13 @@ export function TriggerButton({ onTriggerRejected }: TriggerButtonProps) {
           </motion.p>
         )}
       </AnimatePresence>
+
+      <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+        <Clock className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+        <p className="text-xs text-amber-300/90">
+          Bubbi runs on free-tier models with rate limits — expect 1–3 min for full responses.
+        </p>
+      </div>
     </div>
   );
 }
