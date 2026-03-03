@@ -11,9 +11,7 @@ import { SessionSelector } from '@/components/ui/SessionSelector';
 import { EventDetail } from '@/components/ui/EventDetail';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { LiveConnection } from '@/components/live/LiveConnection';
-import { TriggerButton } from '@/components/ui/TriggerButton';
 import { useSynapseStore } from '@/lib/store';
-import { usePusherWatch } from '@/lib/usePusherWatch';
 import { demoSessions } from '@/data/demo-sessions/building-website';
 import { AgentSession, AgentEvent } from '@/lib/types';
 import Link from 'next/link';
@@ -21,7 +19,7 @@ import Link from 'next/link';
 type Mode = 'demo' | 'upload' | 'live' | 'watch';
 
 const MODES: { id: Mode; label: string; icon: typeof Sparkles; prominent?: boolean }[] = [
-  { id: 'watch', label: 'Watch Bubbi', icon: Eye, prominent: true },
+  { id: 'watch', label: 'Bubbi', icon: Eye, prominent: false },
   { id: 'demo', label: 'Demo', icon: Sparkles },
   { id: 'upload', label: 'Upload', icon: Upload },
   { id: 'live', label: 'Live', icon: Zap },
@@ -55,7 +53,7 @@ export default function AppPage() {
     setMode(newMode);
     reset();
     setSelectedEventId(null);
-    setLiveMode(newMode === 'live' || newMode === 'watch');
+    setLiveMode(newMode === 'live');
     if (newMode === 'demo') {
       setSession(demoSessions[0]);
     } else {
@@ -79,18 +77,12 @@ export default function AppPage() {
     setSession(newSession);
     setLiveMode(true);
   }, [setSession, setLiveMode]);
-  
+
   const handleLiveEvent = useCallback((event: AgentEvent) => {
     addLiveEvent(event);
   }, [addLiveEvent]);
 
-  usePusherWatch({
-    enabled: mode === 'watch',
-    onSessionStart: handleLiveSessionStart,
-    onEvent: handleLiveEvent,
-  });
-
-  const isLiveStreaming = (mode === 'live' || mode === 'watch') && session;
+  const isLiveStreaming = mode === 'live' && session;
   
   return (
     <div className="flex flex-col h-screen bg-slate-950 text-white overflow-hidden">
@@ -224,37 +216,44 @@ export default function AppPage() {
           </ReactFlowProvider>
         )}
         
-        {/* Watch Bubbi - enhanced waiting screen */}
-        {mode === 'watch' && !session && (
+        {/* Bubbi retirement notice */}
+        {mode === 'watch' && (
           <div className="flex items-center justify-center h-full px-6">
-            <div className="text-center max-w-sm">
+            <div className="text-center max-w-md">
               <div className="relative inline-flex items-center justify-center w-24 h-24 mb-6">
-                <div className="absolute inset-0 bg-violet-600/30 rounded-2xl animate-ping" style={{ animationDuration: '2s' }} />
-                <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-700 border border-violet-500/30 flex items-center justify-center shadow-xl shadow-violet-500/20">
-                  <Eye className="w-10 h-10 text-white" />
+                <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600/30 flex items-center justify-center shadow-xl shadow-slate-500/10">
+                  <Eye className="w-10 h-10 text-slate-400" />
                 </div>
               </div>
-              <h2 className="text-xl font-semibold mb-2">Waiting for Bubbi...</h2>
-              <p className="text-slate-500 mb-6">
-                Listening for live events. When Bubbi starts working on a task, you&apos;ll see the thought process unfold here in real-time.
+              <h2 className="text-xl font-semibold mb-2">Bubbi has been put to pasture</h2>
+              <p className="text-slate-400 mb-4">
+                The competition at{' '}
+                <a href="https://naglasupan.is" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 transition-colors underline underline-offset-2">
+                  naglasupan.is
+                </a>
+                {' '}has concluded, and Bubbi&apos;s live demo has been retired.
               </p>
-              <div className="flex items-center justify-center gap-1.5 mb-6">
-                <span className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <p className="text-slate-500 text-sm mb-8">
+                You can still explore pre-recorded agent sessions in Demo mode, upload your own session files, or connect to a live agent.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <button
+                  onClick={() => handleModeChange('demo')}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity shadow-lg shadow-indigo-500/20"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Explore Demos
+                </button>
+                <button
+                  onClick={() => handleModeChange('live')}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl font-medium text-sm transition-all"
+                >
+                  <Zap className="w-4 h-4" />
+                  Connect Live
+                </button>
               </div>
-              <TriggerButton />
-              <p className="text-xs text-slate-600 mt-4 max-w-xs">
-                Bubbi automatically works on tasks every few hours. Or trigger one now!
-              </p>
             </div>
           </div>
-        )}
-        
-        {mode === 'watch' && session && (
-          <ReactFlowProvider>
-            <SynapseGraph />
-          </ReactFlowProvider>
         )}
         
         {mode === 'demo' && (
@@ -284,22 +283,6 @@ export default function AppPage() {
           </div>
         )}
         
-        {mode === 'watch' && session && (
-          <div className="absolute top-4 left-4 z-10">
-            <div className="flex items-center gap-3 bg-slate-900/90 backdrop-blur-xl border border-violet-500/30 rounded-xl px-4 py-3">
-              <div className="relative">
-                <div className="p-2 bg-violet-500/20 rounded-lg border border-violet-500/20">
-                  <Eye className="w-4 h-4 text-violet-400" />
-                </div>
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-violet-500 rounded-full animate-pulse-soft" />
-              </div>
-              <div>
-                <div className="text-sm font-medium text-white">{session.name}</div>
-                <div className="text-[11px] text-slate-400">{session.events.length} events · Watching Bubbi</div>
-              </div>
-            </div>
-          </div>
-        )}
         
         {/* Event detail - full screen overlay on mobile, side panel on desktop */}
         <EventDetail 
@@ -360,23 +343,6 @@ export default function AppPage() {
         </div>
       )}
       
-      {session && mode === 'watch' && (
-        <div className="bg-slate-900/95 backdrop-blur-xl border-t border-violet-900/50 px-4 py-3">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="font-mono text-slate-300">{session.events.length}</span>
-              <span className="text-slate-500">events from Bubbi</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <TriggerButton />
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-violet-500 rounded-full animate-pulse-soft" />
-                <span className="text-sm text-violet-400">Watching Live</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

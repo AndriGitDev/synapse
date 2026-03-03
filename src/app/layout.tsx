@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://synapse.andri.is'),
   title: "SYNAPSE — Watch AI Agents Think",
   description: "Visualize OpenClaw AI agent reasoning in real-time. See every thought, tool call, and reasoning step as a beautiful interactive graph. Built by an AI.",
-  keywords: ["AI", "agent", "visualization", "LLM", "Claude", "GPT", "developer tools", "Bubbi", "LangChain"],
+  keywords: ["AI", "agent", "visualization", "LLM", "Claude", "GPT", "developer tools", "LangChain"],
   authors: [{ name: "Andri", url: "https://andri.is" }],
   creator: "Andri",
   publisher: "Andri Pétur Hafþórsson",

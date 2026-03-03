@@ -1,6 +1,6 @@
 'use client';
 
-import { Brain, Github, ArrowRight, Eye, Terminal, Cpu, Network, ChevronRight } from 'lucide-react';
+import { Brain, Github, ArrowRight, Terminal, Cpu, Network, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
 
@@ -281,10 +281,10 @@ export default function LandingPage() {
 
           {/* CTAs */}
           <div className="flex flex-wrap items-center gap-3 mb-12">
-            <Link href="/app?mode=watch"
+            <Link href="/app"
               className="group flex items-center gap-2 px-6 py-3.5 bg-white text-slate-950 rounded-xl font-semibold text-sm hover:bg-slate-100 transition-all shadow-lg shadow-white/10">
-              <Eye className="w-4 h-4" />
-              Watch Bubbi Think
+              <Brain className="w-4 h-4" />
+              Explore Demos
               <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link href="/app"
@@ -310,7 +310,7 @@ export default function LandingPage() {
                   <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
                   <span className="w-3 h-3 rounded-full bg-[#28c840]" />
                 </div>
-                <span className="text-[11px] text-slate-600 font-mono ml-2">synapse — bubbi session 3a995d</span>
+                <span className="text-[11px] text-slate-600 font-mono ml-2">synapse — agent session 3a995d</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
@@ -395,20 +395,20 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Large card — Watch Bubbi */}
-            <BentoCard className="sm:col-span-2 lg:col-span-2" href="/app?mode=watch">
+            {/* Large card — Live Streaming */}
+            <BentoCard className="sm:col-span-2 lg:col-span-2" href="/app?mode=live">
               <div className="p-8 sm:p-10">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                  <span className="text-xs font-mono text-emerald-400">LIVE NOW</span>
+                  <span className="text-xs font-mono text-emerald-400">REAL-TIME</span>
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-bold mb-3">Watch Bubbi Think</h3>
+                <h3 className="text-2xl sm:text-3xl font-bold mb-3">Watch Any Agent Think</h3>
                 <p className="text-slate-400 mb-6 max-w-lg">
-                  Pick a command — cybersecurity news, random country facts, space discoveries, haiku, or history — 
-                  and watch every reasoning step unfold as a live graph.
+                  Connect to any running AI agent via WebSocket and watch every reasoning step, tool call,
+                  and decision unfold as a live interactive graph.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {['🔍 Cyber News', '🌍 Random Facts', '🚀 Space', '🎲 Haiku', '📅 History'].map(cmd => (
+                  {['💭 Reasoning', '🔍 Tool Calls', '📄 File Ops', '🔀 Multi-Agent', '✓ Results'].map(cmd => (
                     <span key={cmd} className="px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] text-xs font-mono text-slate-400">
                       {cmd}
                     </span>
@@ -528,21 +528,17 @@ export default function LandingPage() {
       {/* ── Final CTA ── */}
       <section className="py-24 px-6">
         <div className="max-w-2xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/[0.05] mb-8">
-            <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-            <span className="text-emerald-400 text-xs font-mono">Bubbi is online right now</span>
-          </div>
           <h2 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6">
             See it to believe it
           </h2>
           <p className="text-slate-400 text-lg mb-10 max-w-md mx-auto">
-            Pick a command. Watch the graph build in real-time. 
+            Explore demo sessions or connect your own agent.
             This is what AI reasoning looks like.
           </p>
-          <Link href="/app?mode=watch"
+          <Link href="/app"
             className="group inline-flex items-center gap-3 px-8 py-4 bg-white text-slate-950 rounded-xl font-bold text-lg hover:bg-slate-100 transition-all shadow-lg shadow-white/10">
-            <Eye className="w-5 h-5" />
-            Start Watching
+            <Brain className="w-5 h-5" />
+            Try SYNAPSE
             <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </div>

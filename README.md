@@ -12,7 +12,6 @@ SYNAPSE visualizes AI agent decision-making as interactive node graphs. Built fo
 
 ## ✨ Features
 
-- **👁️ Watch Bubbi** — Watch our demo AI agent (Bubbi) think in real-time. Pick from 5 commands and see the entire reasoning process unfold as an interactive graph
 - **🎬 Demo Mode** — Pre-loaded sessions showing AI agents solving real problems
 - **📤 Upload Mode** — Drag & drop your own OpenClaw/Clawdbot session files
 - **⚡ Live Mode** — Connect to any AI agent via WebSocket for real-time streaming
@@ -56,46 +55,9 @@ Open [http://localhost:3000](http://localhost:3000) and explore!
 3. **Debugging a 500 Error** — Follow along as bugs get squashed
 4. **Security Vulnerability Scan** — Watch an AI audit code for security issues
 
-## 👁️ Watch Bubbi Live
+## 👁️ Bubbi (Retired)
 
-The "Watch Bubbi" mode lets visitors trigger an AI agent and watch it think in real-time. Bubbi can:
-
-- 🔍 Search for today's cybersecurity news
-- 🌍 Pick a random country and find obscure facts
-- 🚀 Find the latest space/astronomy news
-- 🎲 Compose a haiku about the current moment
-- 📅 Discover what happened on this day in history
-
-### How It Works
-
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  User picks  │     │   Pusher    │     │   SYNAPSE   │
-│  a command   │ ──▶ │   (Cloud)   │ ──▶ │  (Frontend) │
-└──────┬───────┘     └──────┬──────┘     └─────────────┘
-       │                    │
-       ▼                    ▼
-┌─────────────┐     ┌─────────────┐
-│  Cloud       │ ◀── │   OpenClaw  │
-│  Bridge      │     │   (Agent)   │
-└─────────────┘     └─────────────┘
-       │
-       └── Polls session JSONL files
-           and pushes events to Pusher
-```
-
-### Setup (Self-Hosting)
-
-1. Create a free [Pusher](https://pusher.com) account
-2. Copy `.env.example` to `.env.local` and fill in credentials
-3. Run the cloud bridge on the same machine as your OpenClaw agent:
-
-```bash
-node scripts/cloud-bridge.js
-```
-
-4. Deploy the Next.js app (Vercel, etc.) with the same env vars
-5. Visitors can now watch your agent think in real-time!
+> **Bubbi has been put to pasture.** The [naglasupan.is](https://naglasupan.is) competition has concluded, and Bubbi's live demo has been retired. You can still explore pre-recorded demo sessions and connect your own agents.
 
 ## 🔌 Connecting Any Agent (Live Mode)
 
@@ -176,7 +138,7 @@ ws.send(JSON.stringify({
 synapse/
 ├── src/
 │   ├── app/                 # Next.js app router
-│   │   ├── api/trigger/     # Trigger endpoint for Bubbi
+│   │   ├── api/trigger/     # Trigger endpoint (retired)
 │   │   └── app/             # Main app page
 │   ├── components/
 │   │   ├── graph/           # React Flow visualization
