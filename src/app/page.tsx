@@ -287,9 +287,9 @@ export default function LandingPage() {
               Explore Demos
               <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
-            <Link href="/app"
+            <Link href="/app?mode=live"
               className="flex items-center gap-2 px-6 py-3.5 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl font-medium text-sm transition-all">
-              Explore Demos
+              Connect Live
             </Link>
             <a href="https://github.com/AndriGitDev/synapse" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 px-6 py-3.5 text-slate-500 hover:text-white text-sm transition-colors">
