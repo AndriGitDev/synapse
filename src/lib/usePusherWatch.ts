@@ -51,7 +51,7 @@ export function usePusherWatch({ enabled, onSessionStart, onEvent, onTriggerAcce
     }
 
     console.log('[Pusher] Initializing connection...');
-    Pusher.logToConsole = true;
+    Pusher.logToConsole = process.env.NODE_ENV === 'development';
 
     const pusher = new Pusher(PUSHER_KEY, {
       cluster: PUSHER_CLUSTER,

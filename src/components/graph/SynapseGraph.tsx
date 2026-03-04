@@ -297,7 +297,12 @@ function SynapseGraphInner() {
     
     if (agent?.role) {
       const agentColor = AGENT_COLORS[agent.role] || AGENT_COLORS.default;
-      return agentColor.glow.replace('rgba(', '#').replace(/,\s*[\d.]+\)/, '');
+      const match = agentColor.glow.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      if (match) {
+        const [, r, g, b] = match;
+        return `#${Number(r).toString(16).padStart(2, '0')}${Number(g).toString(16).padStart(2, '0')}${Number(b).toString(16).padStart(2, '0')}`;
+      }
+      return '#6366f1';
     }
     
     const colors = EVENT_COLORS[event.type];

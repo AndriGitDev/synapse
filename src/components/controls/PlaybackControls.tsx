@@ -92,7 +92,7 @@ export function PlaybackControls() {
           onClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
             const percent = (e.clientX - rect.left) / rect.width;
-            const targetIndex = Math.floor(percent * totalEvents) - 1;
+            const targetIndex = Math.round(percent * (totalEvents - 1));
             seekTo(targetIndex);
           }}
         >

@@ -1,5 +1,3 @@
 # https://synapse.andri.is
 User-agent: *
 Allow: /
-
-Sitemap: https://synapse.andri.is/sitemap.xml

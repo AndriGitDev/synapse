@@ -26,7 +26,7 @@ export function connectToLiveStream(callbacks: LiveCallbacks): () => void {
   console.log('[Pusher] Connecting with key:', PUSHER_KEY.slice(0, 8) + '...');
 
   // Enable Pusher logging in development
-  Pusher.logToConsole = true;
+  Pusher.logToConsole = process.env.NODE_ENV === 'development';
 
   // Create Pusher instance
   pusherInstance = new Pusher(PUSHER_KEY, {

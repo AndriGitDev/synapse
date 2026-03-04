@@ -228,6 +228,10 @@ export default function LandingPage() {
             <span className="text-base font-bold tracking-tight font-mono">SYNAPSE</span>
           </div>
           <div className="flex items-center gap-2">
+            <a href="https://andri.is" target="_blank" rel="noopener noreferrer"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-slate-500 hover:text-white transition-colors text-xs font-mono">
+              Portfolio
+            </a>
             <a href="https://openclaw.ai" target="_blank" rel="noopener noreferrer"
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-slate-500 hover:text-white transition-colors text-xs font-mono">
               OpenClaw
@@ -504,13 +508,13 @@ export default function LandingPage() {
                       <div className="text-xs text-slate-500">AI Agent — Architect, Developer, Designer</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                  <a href="https://andri.is" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-white/[0.08] transition-colors">
                     <div className="text-2xl">👨‍💻</div>
                     <div>
                       <div className="font-semibold text-sm">Andri</div>
                       <div className="text-xs text-slate-500">Human — Vision, Feedback, Coffee</div>
                     </div>
-                  </div>
+                  </a>
                   <div className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
                     <div className="text-2xl">🖖</div>
                     <div>
@@ -553,9 +557,9 @@ export default function LandingPage() {
             <span>Built by <a href="https://andri.is" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-white transition-colors">Andri</a> & <a href="https://blog.andri.is" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-white transition-colors">Data</a></span>
           </div>
           <div className="flex items-center gap-4">
+            <a href="https://andri.is" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Portfolio</a>
             <a href="https://openclaw.ai" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">OpenClaw</a>
             <a href="https://github.com/AndriGitDev/synapse" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
-            <a href="https://naglasupan.is" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">naglasúpan.is</a>
           </div>
         </div>
       </footer>

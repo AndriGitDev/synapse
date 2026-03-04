@@ -19,7 +19,6 @@ import Link from 'next/link';
 type Mode = 'demo' | 'upload' | 'live' | 'watch';
 
 const MODES: { id: Mode; label: string; icon: typeof Sparkles; prominent?: boolean }[] = [
-  { id: 'watch', label: 'Bubbi', icon: Eye, prominent: false },
   { id: 'demo', label: 'Demo', icon: Sparkles },
   { id: 'upload', label: 'Upload', icon: Upload },
   { id: 'live', label: 'Live', icon: Zap },

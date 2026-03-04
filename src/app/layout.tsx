@@ -26,20 +26,11 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://synapse.andri.is",
     siteName: "SYNAPSE",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "SYNAPSE - AI Agent Thought Visualizer",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "SYNAPSE — Watch AI Agents Think",
     description: "Visualize OpenClaw AI agent reasoning in real-time. Built by an AI.",
-    images: ["/og-image.png"],
   },
   robots: {
     index: true,
