@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({
@@ -50,6 +51,11 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-slate-950`}>
         {children}
+        <Script
+          data-goatcounter="https://goat.andri.is/count"
+          src="//goat.andri.is/count.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
