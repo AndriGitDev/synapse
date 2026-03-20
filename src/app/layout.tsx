@@ -51,11 +51,23 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-slate-950`}>
         {children}
-        <Script
-          data-goatcounter="https://goat.andri.is/count"
-          src="//goat.andri.is/count.js"
-          strategy="afterInteractive"
-        />
+        <Script src="https://swetrix.org/swetrix.js" strategy="afterInteractive" />
+        <Script id="swetrix-init" strategy="afterInteractive">
+          {`
+            swetrix.init('378K5cTK8Pn0', {
+              apiURL: 'https://swetrixapi.kindra.is/log',
+            })
+            swetrix.trackViews()
+          `}
+        </Script>
+        <noscript>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://swetrixapi.kindra.is/log/noscript?pid=378K5cTK8Pn0"
+            alt=""
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </noscript>
       </body>
     </html>
   );
