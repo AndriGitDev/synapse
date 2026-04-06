@@ -51,20 +51,20 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-slate-950`}>
         {children}
-        <Script src="https://swetrix.org/swetrix.js" strategy="afterInteractive" />
+        <Script src="https://swetrix.kastro.is/swetrix.js" strategy="afterInteractive" />
         <Script id="swetrix-init" strategy="afterInteractive">
           {`
             document.addEventListener('DOMContentLoaded', function() {
               if (window.swetrix) {
-                swetrix.init('378K5cTK8Pn0', {
-                  apiURL: 'https://swetrixapi.kindra.is/log',
+                swetrix.init('9U8WieznN7O2', {
+                  apiURL: 'https://swetrixapi.kastro.is/log',
                 });
                 swetrix.trackViews();
               }
             });
             if (document.readyState !== 'loading' && window.swetrix) {
-              swetrix.init('378K5cTK8Pn0', {
-                apiURL: 'https://swetrixapi.kindra.is/log',
+              swetrix.init('9U8WieznN7O2', {
+                apiURL: 'https://swetrixapi.kastro.is/log',
               });
               swetrix.trackViews();
             }
@@ -73,7 +73,7 @@ export default function RootLayout({
         <noscript>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="https://swetrixapi.kindra.is/log/noscript?pid=378K5cTK8Pn0"
+            src="https://swetrixapi.kastro.is/log/noscript?pid=9U8WieznN7O2"
             alt=""
             referrerPolicy="no-referrer-when-downgrade"
           />
