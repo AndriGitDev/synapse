@@ -45,11 +45,16 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
     setIsDragging(false);
     
     const file = e.dataTransfer.files[0];
-    if (file && (file.type === 'application/json' || file.name.endsWith('.json'))) {
+    const accepted =
+      file &&
+      (file.type === 'application/json' ||
+        file.name.endsWith('.json') ||
+        file.name.endsWith('.jsonl'));
+    if (accepted) {
       processFile(file);
     } else {
       setStatus('error');
-      setError('Please drop a JSON file');
+      setError('Please drop a .json or .jsonl file');
     }
   }, [processFile]);
   
@@ -92,7 +97,7 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
             >
               <input
                 type="file"
-                accept=".json,application/json"
+                accept=".json,.jsonl,application/json,application/x-ndjson"
                 onChange={handleFileInput}
                 className="hidden"
               />
@@ -114,6 +119,10 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
             <div className="mt-4 text-center">
               <p className="text-xs text-slate-500">Supported formats:</p>
               <div className="flex justify-center gap-2 mt-2">
+                <span className="flex items-center gap-1 px-2 py-1 bg-slate-800 rounded text-xs text-slate-400">
+                  <FileJson className="w-3 h-3" />
+                  Claude Code (.jsonl)
+                </span>
                 <span className="flex items-center gap-1 px-2 py-1 bg-slate-800 rounded text-xs text-slate-400">
                   <FileJson className="w-3 h-3" />
                   Clawdbot
