@@ -347,8 +347,14 @@ export class ClaudeCodeStreamParser {
             });
             lastInTurn = evId;
           } else if (block.type === 'tool_use') {
-            const isTask = block.name === 'Task';
-            if (isTask && !rec.isSidechain) {
+            // Sub-agent spawn detection: the tool is canonically `Task`, but
+            // some Claude Code harnesses surface it as `Agent`. The reliable
+            // signal in either case is a `subagent_type` field on the input.
+            const isSpawn =
+              block.name === 'Task' ||
+              block.name === 'Agent' ||
+              typeof block.input?.subagent_type === 'string';
+            if (isSpawn && !rec.isSidechain) {
               const subId = `agent_${block.id.slice(-6)}`;
               const subType =
                 (block.input?.subagent_type as string | undefined) || 'sub-agent';
@@ -372,7 +378,7 @@ export class ClaudeCodeStreamParser {
                 parentId: lastInTurn,
                 agentId: 'main',
                 metadata: {
-                  tool: 'Task',
+                  tool: block.name,
                   spawnedAgent: { id: subId, name: subDesc, role: subType },
                 },
               });
