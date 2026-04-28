@@ -266,7 +266,7 @@ export default function LandingPage() {
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
               <span className="text-emerald-400 text-[11px] font-mono font-medium">LIVE</span>
             </div>
-            <span className="text-slate-600 text-xs font-mono">Built for OpenClaw agents</span>
+            <span className="text-slate-600 text-xs font-mono">Now tailing Claude Code sessions</span>
           </div>
           
           {/* Headline — left aligned, massive */}
@@ -406,13 +406,12 @@ export default function LandingPage() {
                   <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
                   <span className="text-xs font-mono text-emerald-400">REAL-TIME</span>
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-bold mb-3">Watch Any Agent Think</h3>
+                <h3 className="text-2xl sm:text-3xl font-bold mb-3">Tail Claude Code Live</h3>
                 <p className="text-slate-400 mb-6 max-w-lg">
-                  Connect to any running AI agent via WebSocket and watch every reasoning step, tool call,
-                  and decision unfold as a live interactive graph.
+                  Run <code className="px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/[0.06] text-violet-300 text-[0.85em] font-mono">npm&nbsp;run&nbsp;bridge:claude-code</code> and SYNAPSE tails the active session — every thought, tool call, sub-agent spawn, and file edit unfolds as a live graph. Or pipe any agent in over WebSocket.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {['💭 Reasoning', '🔍 Tool Calls', '📄 File Ops', '🔀 Multi-Agent', '✓ Results'].map(cmd => (
+                  {['💭 Reasoning', '🔍 Tool Calls', '📄 File Ops', '🔀 Sub-agents', '✓ Results'].map(cmd => (
                     <span key={cmd} className="px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] text-xs font-mono text-slate-400">
                       {cmd}
                     </span>
@@ -452,8 +451,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Upload & Visualize</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  Drag & drop any OpenClaw session file. Instant graph visualization with full event detail 
-                  on click. LangChain support coming soon.
+                  Drop a Claude Code <code className="px-1 py-0.5 rounded bg-white/[0.06] text-cyan-300 text-[0.85em] font-mono">.jsonl</code> session or any OpenClaw transcript. Real conversation DAG via <code className="px-1 py-0.5 rounded bg-white/[0.06] text-cyan-300 text-[0.85em] font-mono">parentUuid</code> — sub-agents land in their own swim lanes.
                 </p>
               </div>
             </BentoCard>

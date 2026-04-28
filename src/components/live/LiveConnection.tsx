@@ -190,9 +190,20 @@ export function LiveConnection({ onSessionStart, onEventReceived }: LiveConnecti
         </div>
 
         {/* Help text */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-slate-500">
-            Compatible with Clawdbot&apos;s SYNAPSE output mode
+        <div className="mt-6 space-y-3">
+          <div className="rounded-lg border border-slate-800/60 bg-slate-900/40 px-4 py-3">
+            <p className="text-[11px] font-mono uppercase tracking-widest text-violet-400/80 mb-1.5">
+              Tail Claude Code
+            </p>
+            <code className="block text-xs font-mono text-slate-300 select-all">
+              npm run bridge:claude-code
+            </code>
+            <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
+              Streams the most recent <code className="text-slate-400">~/.claude/projects/&lt;slug&gt;/*.jsonl</code> session over <code className="text-slate-400">ws://127.0.0.1:8080/synapse</code>.
+            </p>
+          </div>
+          <p className="text-xs text-slate-500 text-center">
+            Also compatible with Clawdbot&apos;s SYNAPSE output mode and the universal pipe.
           </p>
         </div>
       </div>
