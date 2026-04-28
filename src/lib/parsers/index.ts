@@ -1,6 +1,6 @@
 import { AgentSession } from '../types';
 import { parseClawdbotSession, isClawdbotFormat } from './clawdbot';
-import { parseClaudeCodeSession, isClaudeCodeFormat } from './claude-code';
+import { parseClaudeCodeSession, isClaudeCodeFormat } from './claude-code.mts';
 
 export type ParseResult =
   | { success: true; session: AgentSession }

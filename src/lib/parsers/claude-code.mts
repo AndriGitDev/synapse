@@ -1,4 +1,4 @@
-import { AgentSession, AgentEvent, AgentInfo, EventType } from '../types';
+import type { AgentSession, AgentEvent, AgentInfo, EventType } from '../types';
 
 /**
  * Parse a Claude Code session (JSONL on disk at
@@ -20,6 +20,10 @@ import { AgentSession, AgentEvent, AgentInfo, EventType } from '../types';
  * Sidechains (`isSidechain: true`) come from the Task tool spawning a
  * sub-agent. We surface those as Synapse spawn_agent / agent_complete events
  * and assign each sidechain its own swim lane via AgentEvent.agentId.
+ *
+ * The implementation is exposed as a stateful class (ClaudeCodeStreamParser)
+ * so live mode can feed records incrementally as they are appended to the
+ * session file. parseClaudeCodeSession is a thin batch wrapper.
  */
 
 type CCContentBlock =
@@ -111,7 +115,6 @@ function toolToEventType(name: string): EventType {
 
 function describeToolInput(name: string, input?: Record<string, unknown>): string {
   if (!input) return `Calling ${name}`;
-  // Common patterns across Claude Code tools.
   const path =
     (input.file_path as string | undefined) ||
     (input.path as string | undefined) ||
@@ -139,8 +142,6 @@ export function isClaudeCodeFormat(data: unknown): boolean {
   const probe = (rec: unknown): boolean => {
     if (!rec || typeof rec !== 'object') return false;
     const r = rec as Record<string, unknown>;
-    // Required + characteristic fields. sessionId+uuid is the strong signal;
-    // type is always present on Claude Code records.
     return (
       typeof r.type === 'string' &&
       (typeof r.sessionId === 'string' || typeof r.uuid === 'string')
@@ -159,7 +160,12 @@ export function isClaudeCodeFormat(data: unknown): boolean {
   return probe(data);
 }
 
-function parseJsonl(input: string | unknown[]): CCRecord[] {
+/**
+ * Parse a JSONL string (or pass through an array of records) into CCRecord[].
+ * Tolerates a truncated trailing line — common when reading a session file
+ * that is being actively appended to.
+ */
+export function parseClaudeCodeJsonl(input: string | unknown[]): CCRecord[] {
   if (Array.isArray(input)) return input as CCRecord[];
   const out: CCRecord[] = [];
   for (const raw of input.split('\n')) {
@@ -168,128 +174,101 @@ function parseJsonl(input: string | unknown[]): CCRecord[] {
     try {
       out.push(JSON.parse(line) as CCRecord);
     } catch {
-      // Tolerate truncated tail line without aborting.
+      // truncated tail — drop and continue
     }
   }
   return out;
 }
 
-interface ToolUseSlot {
-  uuid: string;          // synthetic uuid we minted for the spawn_agent event
-  agentId: string;       // sub-agent id we assigned to the sidechain
-  agentSpawned: boolean; // first sidechain record has been seen
-}
-
-export function parseClaudeCodeSession(input: string | unknown[]): AgentSession {
-  const records = parseJsonl(input);
-
-  // Pre-pass: index every record by uuid so we can climb parent chains across
-  // records we deliberately skip (file-history snapshots, permission banners,
-  // deferred-tools deltas). Without this, ~24% of events end up as roots in
-  // the graph because their parent record was filtered out.
-  const recordsByUuid = new Map<string, CCRecord>();
-  for (const r of records) {
-    if (r.uuid) recordsByUuid.set(r.uuid, r);
-  }
-
-  // Pre-pass: map record uuid -> assigned agentId.
-  // The main thread is 'main'. Each Task tool_use that spawns a sidechain
-  // gets its own agent id derived from the tool_use_id.
-  const events: AgentEvent[] = [];
-  const agents: AgentInfo[] = [
+/**
+ * Stateful incremental parser. Feed it records (or raw JSONL chunks) and it
+ * emits the corresponding AgentEvents in order. Internal state — uuid maps,
+ * sub-agent registry, sidechain attribution — persists across calls so the
+ * live bridge can stream events as they are appended to the session file.
+ */
+export class ClaudeCodeStreamParser {
+  private events: AgentEvent[] = [];
+  private agents: AgentInfo[] = [
     { id: 'main', name: 'Claude Code', role: 'orchestrator' },
   ];
-  const subAgentIds = new Set<string>();
+  private subAgentIds = new Set<string>();
+  private recordsByUuid = new Map<string, CCRecord>();
+  // record uuid OR tool_use id -> last event id we emitted for it. Used to
+  // rewrite future events' parentId into a real, in-graph event id.
+  private recordToLastEventId = new Map<string, string>();
+  // sidechain record uuid -> sub-agent id, threaded forward as we process
+  // the chain so children are attributed to the right swim lane.
+  private sidechainParents = new Map<string, string>();
+  // Spawn metadata indexed by Task tool_use id, so we know which sub-agent
+  // to mark complete when the matching tool_result lands on main.
+  private taskSlotByToolUseId = new Map<string, { agentId: string; spawnEventId: string }>();
+  private completedAgents = new Set<string>();
+  private firstTimestamp: Date | null = null;
+  private sessionId: string | undefined;
+  private currentRecordUuid: string | undefined;
 
-  // Map tool_use_id -> ToolUseSlot for Task spawns so we can attribute
-  // the matching sidechain records to the right swim-lane.
-  const taskSlotByToolUseId = new Map<string, ToolUseSlot>();
-  // Sidechain recordUuid -> agentId for fast lookup
-  const sidechainParents = new Map<string, string>();
-
-  let firstTimestamp: Date | null = null;
-  let sessionId: string | undefined;
-  const sidechainLastEventByAgent = new Map<string, string>();
-
-  // record.uuid -> id of the last event we emitted for that record. Used to
-  // rewrite future events' parentId (which references the parent record's uuid)
-  // into a real, in-graph event id. Without this, suffixed ids like
-  // `<uuid>::text` orphan their children in the React Flow graph.
-  const recordToLastEventId = new Map<string, string>();
-  let currentRecordUuid: string | undefined;
-
-  // Resolve a parentUuid by walking up through skipped records.
-  //
-  // Three cases:
-  //   1. The id maps to an emitted event (record uuid OR tool_use_id we
-  //      registered) → return the mapped event id.
-  //   2. The id is a known record we skipped → climb its parentUuid.
-  //   3. The id is unknown to both maps → return as-is (it is most likely a
-  //      direct event id like a tool_use_id pointing at a tool_call we have
-  //      already emitted; the matching tool_result will still link).
-  function resolveParent(parentUuid: string | undefined): string | undefined {
+  private resolveParent(parentUuid: string | undefined): string | undefined {
     if (!parentUuid) return undefined;
     let cursor: string | null | undefined = parentUuid;
     const seen = new Set<string>();
     while (cursor && !seen.has(cursor)) {
       seen.add(cursor);
-      const mapped = recordToLastEventId.get(cursor);
+      const mapped = this.recordToLastEventId.get(cursor);
       if (mapped) return mapped;
-      const ancestor = recordsByUuid.get(cursor);
-      if (!ancestor) return cursor; // unknown id — leave it for direct match
+      const ancestor = this.recordsByUuid.get(cursor);
+      if (!ancestor) return cursor; // unknown id — leave for direct match
       cursor = ancestor.parentUuid ?? undefined;
     }
     return parentUuid;
   }
 
-  function pushEvent(ev: AgentEvent) {
-    ev.parentId = resolveParent(ev.parentId);
+  private push(events: AgentEvent[], ev: AgentEvent): void {
+    ev.parentId = this.resolveParent(ev.parentId);
+    this.events.push(ev);
     events.push(ev);
-    if (currentRecordUuid) recordToLastEventId.set(currentRecordUuid, ev.id);
-    if (ev.agentId && ev.agentId !== 'main') {
-      sidechainLastEventByAgent.set(ev.agentId, ev.id);
+    if (this.currentRecordUuid) {
+      this.recordToLastEventId.set(this.currentRecordUuid, ev.id);
     }
   }
 
-  function resolveAgentId(rec: CCRecord): string {
+  private resolveAgentId(rec: CCRecord): string {
     if (!rec.isSidechain) return 'main';
-    // Walk parentUuid chain to find a known sidechain root.
     let cursor: string | null | undefined = rec.parentUuid;
     while (cursor) {
-      const found = sidechainParents.get(cursor);
+      const found = this.sidechainParents.get(cursor);
       if (found) {
-        if (rec.uuid) sidechainParents.set(rec.uuid, found);
+        if (rec.uuid) this.sidechainParents.set(rec.uuid, found);
         return found;
       }
-      // Without the full record map we can't keep climbing — this works for
-      // sequential records because the immediate parent is already mapped.
       cursor = null;
     }
-    // Unrooted sidechain — fall back to a generic sidechain lane.
+    // Unrooted sidechain — fallback lane.
     const id = 'sidechain';
-    if (!subAgentIds.has(id)) {
-      subAgentIds.add(id);
-      agents.push({ id, name: 'Sub-agent', role: 'researcher' });
+    if (!this.subAgentIds.has(id)) {
+      this.subAgentIds.add(id);
+      this.agents.push({ id, name: 'Sub-agent', role: 'researcher' });
     }
-    if (rec.uuid) sidechainParents.set(rec.uuid, id);
+    if (rec.uuid) this.sidechainParents.set(rec.uuid, id);
     return id;
   }
 
-  for (const rec of records) {
-    if (!sessionId && rec.sessionId) sessionId = rec.sessionId;
+  /** Process one record, return the events it produced (in order). */
+  consume(rec: CCRecord): AgentEvent[] {
+    const emitted: AgentEvent[] = [];
+    if (rec.uuid) this.recordsByUuid.set(rec.uuid, rec);
+    if (!this.sessionId && rec.sessionId) this.sessionId = rec.sessionId;
     const ts = rec.timestamp ? new Date(rec.timestamp) : new Date();
-    if (!firstTimestamp) firstTimestamp = ts;
-    const agentId = resolveAgentId(rec);
+    if (!this.firstTimestamp) this.firstTimestamp = ts;
+    const agentId = this.resolveAgentId(rec);
     const parentId = rec.parentUuid || undefined;
-    currentRecordUuid = rec.uuid;
+    this.currentRecordUuid = rec.uuid;
 
     switch (rec.type) {
       case 'user': {
         const msg = (rec as CCMessageRecord).message;
         if (!msg) break;
-        // Plain string content = real user prompt.
         if (typeof msg.content === 'string') {
-          pushEvent({
+          this.push(emitted, {
             id: rec.uuid || newId(),
             timestamp: ts,
             type: 'user_message',
@@ -299,11 +278,10 @@ export function parseClaudeCodeSession(input: string | unknown[]): AgentSession 
           });
           break;
         }
-        // Array content under role:user is how Claude Code delivers tool_result blocks.
         for (const block of msg.content) {
           if (block.type === 'tool_result') {
             const text = flattenToolResultContent(block);
-            pushEvent({
+            this.push(emitted, {
               id: `${rec.uuid || newId()}::${block.tool_use_id}`,
               timestamp: ts,
               type: 'tool_result',
@@ -312,8 +290,23 @@ export function parseClaudeCodeSession(input: string | unknown[]): AgentSession 
               parentId: block.tool_use_id || parentId,
               agentId,
             });
+            // If this tool_result is the return value of a Task call, mark
+            // the spawned sub-agent complete on its lane right now.
+            const slot = this.taskSlotByToolUseId.get(block.tool_use_id);
+            if (slot && !this.completedAgents.has(slot.agentId)) {
+              this.completedAgents.add(slot.agentId);
+              const subAgent = this.agents.find((a) => a.id === slot.agentId);
+              this.push(emitted, {
+                id: `${slot.agentId}::complete`,
+                timestamp: ts,
+                type: 'agent_complete',
+                content: `${subAgent?.name || slot.agentId} finished`,
+                parentId: slot.spawnEventId,
+                agentId: slot.agentId,
+              });
+            }
           } else if (block.type === 'text' && block.text) {
-            pushEvent({
+            this.push(emitted, {
               id: rec.uuid || newId(),
               timestamp: ts,
               type: 'user_message',
@@ -333,7 +326,7 @@ export function parseClaudeCodeSession(input: string | unknown[]): AgentSession 
         for (const block of msg.content) {
           if (block.type === 'thinking' && block.thinking) {
             const evId = `${rec.uuid || newId()}::think`;
-            pushEvent({
+            this.push(emitted, {
               id: evId,
               timestamp: ts,
               type: 'thought',
@@ -344,7 +337,7 @@ export function parseClaudeCodeSession(input: string | unknown[]): AgentSession 
             lastInTurn = evId;
           } else if (block.type === 'text' && block.text) {
             const evId = `${rec.uuid || newId()}::text`;
-            pushEvent({
+            this.push(emitted, {
               id: evId,
               timestamp: ts,
               type: 'assistant_message',
@@ -355,16 +348,15 @@ export function parseClaudeCodeSession(input: string | unknown[]): AgentSession 
             lastInTurn = evId;
           } else if (block.type === 'tool_use') {
             const isTask = block.name === 'Task';
-            // Spawn a sub-agent on Task calls.
             if (isTask && !rec.isSidechain) {
               const subId = `agent_${block.id.slice(-6)}`;
               const subType =
                 (block.input?.subagent_type as string | undefined) || 'sub-agent';
               const subDesc =
                 (block.input?.description as string | undefined) || subType;
-              if (!subAgentIds.has(subId)) {
-                subAgentIds.add(subId);
-                agents.push({
+              if (!this.subAgentIds.has(subId)) {
+                this.subAgentIds.add(subId);
+                this.agents.push({
                   id: subId,
                   name: subDesc,
                   role: subType,
@@ -372,7 +364,7 @@ export function parseClaudeCodeSession(input: string | unknown[]): AgentSession 
                 });
               }
               const spawnId = `${block.id}::spawn`;
-              pushEvent({
+              this.push(emitted, {
                 id: spawnId,
                 timestamp: ts,
                 type: 'spawn_agent',
@@ -384,17 +376,13 @@ export function parseClaudeCodeSession(input: string | unknown[]): AgentSession 
                   spawnedAgent: { id: subId, name: subDesc, role: subType },
                 },
               });
-              taskSlotByToolUseId.set(block.id, {
-                uuid: spawnId,
+              this.taskSlotByToolUseId.set(block.id, {
                 agentId: subId,
-                agentSpawned: false,
+                spawnEventId: spawnId,
               });
-              // Seed sidechain parent map: subsequent sidechain records whose
-              // chain eventually traces back here will be attributed to subId.
-              sidechainParents.set(block.id, subId);
-              if (rec.uuid) sidechainParents.set(rec.uuid, subId);
-              // Make `parentUuid: <toolUseId>` resolve to the spawn event id.
-              recordToLastEventId.set(block.id, spawnId);
+              this.sidechainParents.set(block.id, subId);
+              if (rec.uuid) this.sidechainParents.set(rec.uuid, subId);
+              this.recordToLastEventId.set(block.id, spawnId);
               lastInTurn = spawnId;
             } else {
               const evType = toolToEventType(block.name);
@@ -404,7 +392,7 @@ export function parseClaudeCodeSession(input: string | unknown[]): AgentSession 
               if (typeof inp.file_path === 'string') meta.file = inp.file_path;
               else if (typeof inp.path === 'string') meta.file = inp.path;
               if (typeof inp.command === 'string') meta.command = inp.command;
-              pushEvent({
+              this.push(emitted, {
                 id: evId,
                 timestamp: ts,
                 type: evType,
@@ -421,14 +409,12 @@ export function parseClaudeCodeSession(input: string | unknown[]): AgentSession 
       }
 
       case 'attachment': {
-        // Most attachments are noise (file-history snapshots, deferred-tools deltas).
-        // Surface only hook results — they are user-visible and meaningful.
         const att = (rec as CCAttachmentRecord).attachment;
         if (!att) break;
         const isHook = att.type === 'hook_success' || att.type === 'hook_failure';
         if (!isHook) break;
         const ok = att.type === 'hook_success' && (att.exitCode ?? 0) === 0;
-        pushEvent({
+        this.push(emitted, {
           id: rec.uuid || newId(),
           timestamp: ts,
           type: ok ? 'tool_result' : 'error',
@@ -443,7 +429,7 @@ export function parseClaudeCodeSession(input: string | unknown[]): AgentSession 
       case 'summary': {
         const sumRec = rec as CCSummaryRecord;
         if (!sumRec.summary) break;
-        pushEvent({
+        this.push(emitted, {
           id: rec.uuid || newId(),
           timestamp: ts,
           type: 'decision',
@@ -454,40 +440,70 @@ export function parseClaudeCodeSession(input: string | unknown[]): AgentSession 
         break;
       }
 
-      // Skip noisy / structural records: permission-mode, file-history-snapshot,
-      // system meta. Anything unknown also falls through silently.
+      // permission-mode, file-history-snapshot, system meta — silently skipped.
       default:
         break;
     }
+    return emitted;
   }
 
-  // Emit agent_complete for each sub-agent at the position of its last event.
-  for (const [subId, lastEvId] of sidechainLastEventByAgent.entries()) {
-    const lastIdx = events.findIndex((e) => e.id === lastEvId);
-    if (lastIdx < 0) continue;
-    const last = events[lastIdx];
-    events.splice(lastIdx + 1, 0, {
-      id: `${subId}::complete`,
-      timestamp: last.timestamp,
-      type: 'agent_complete',
-      content: `${agents.find((a) => a.id === subId)?.name || subId} finished`,
-      parentId: last.id,
-      agentId: subId,
-    });
+  /** Process many records (or a JSONL string). Returns events emitted in order. */
+  consumeMany(input: string | unknown[]): AgentEvent[] {
+    const records = parseClaudeCodeJsonl(input);
+    const all: AgentEvent[] = [];
+    for (const rec of records) all.push(...this.consume(rec));
+    return all;
   }
 
-  const isMultiAgent = subAgentIds.size > 0;
+  /**
+   * Emit agent_complete for any sub-agent whose Task tool_result never landed
+   * (session ended mid-flight). Call when the input stream is finalised.
+   */
+  finalize(): AgentEvent[] {
+    const emitted: AgentEvent[] = [];
+    this.currentRecordUuid = undefined;
+    for (const [, slot] of this.taskSlotByToolUseId) {
+      if (this.completedAgents.has(slot.agentId)) continue;
+      this.completedAgents.add(slot.agentId);
+      const last = [...this.events].reverse().find((e) => e.agentId === slot.agentId);
+      const parentId = last?.id || slot.spawnEventId;
+      const subAgent = this.agents.find((a) => a.id === slot.agentId);
+      const ev: AgentEvent = {
+        id: `${slot.agentId}::complete`,
+        timestamp: last?.timestamp || new Date(),
+        type: 'agent_complete',
+        content: `${subAgent?.name || slot.agentId} finished`,
+        parentId,
+        agentId: slot.agentId,
+      };
+      this.events.push(ev);
+      emitted.push(ev);
+    }
+    return emitted;
+  }
 
-  return {
-    id: sessionId || newId(),
-    name: 'Claude Code Session',
-    description: `${events.length} events${
-      isMultiAgent ? ` · ${subAgentIds.size} sub-agent(s)` : ''
-    }`,
-    agent: 'claude',
-    startedAt: firstTimestamp || new Date(),
-    events,
-    agents: isMultiAgent ? agents : undefined,
-    isMultiAgent: isMultiAgent || undefined,
-  };
+  /** Snapshot the session as currently consumed. */
+  getSession(): AgentSession {
+    const isMultiAgent = this.subAgentIds.size > 0;
+    return {
+      id: this.sessionId || newId(),
+      name: 'Claude Code Session',
+      description: `${this.events.length} events${
+        isMultiAgent ? ` · ${this.subAgentIds.size} sub-agent(s)` : ''
+      }`,
+      agent: 'claude',
+      startedAt: this.firstTimestamp || new Date(),
+      events: this.events.slice(),
+      agents: isMultiAgent ? this.agents.slice() : undefined,
+      isMultiAgent: isMultiAgent || undefined,
+    };
+  }
+}
+
+/** Batch entrypoint — equivalent to feeding everything to a fresh stream parser. */
+export function parseClaudeCodeSession(input: string | unknown[]): AgentSession {
+  const parser = new ClaudeCodeStreamParser();
+  parser.consumeMany(input);
+  parser.finalize();
+  return parser.getSession();
 }

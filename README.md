@@ -61,7 +61,26 @@ Open [http://localhost:3000](http://localhost:3000) and explore!
 
 ## 🔌 Connecting Any Agent (Live Mode)
 
-### Option 1: OpenClaw/Clawdbot Bridge
+### Option 1: Claude Code Bridge
+
+Tail a Claude Code session and stream the conversation as it unfolds:
+
+```bash
+# Watches the most recently active session under ~/.claude/projects:
+npm run bridge:claude-code
+
+# Or watch a specific session file:
+npm run bridge:claude-code -- --file ~/.claude/projects/<slug>/<sessionId>.jsonl
+
+# Start SYNAPSE in another terminal
+npm run dev
+
+# Connect in SYNAPSE → Live Mode → ws://localhost:8080/synapse
+```
+
+You can also drop a saved session JSONL into Upload Mode for retrospective playback.
+
+### Option 2: OpenClaw/Clawdbot Bridge
 
 ```bash
 # Start the bridge (watches session files automatically)
@@ -73,7 +92,7 @@ npm run dev
 # Connect in SYNAPSE → Live Mode → ws://localhost:8080/synapse
 ```
 
-### Option 2: Universal Pipe
+### Option 3: Universal Pipe
 
 Stream any agent's output to SYNAPSE:
 
@@ -82,7 +101,7 @@ your-agent --stream | node scripts/synapse-pipe.js
 your-agent 2>&1 | node scripts/synapse-pipe.js --text
 ```
 
-### Option 3: Direct WebSocket
+### Option 4: Direct WebSocket
 
 ```javascript
 const ws = new WebSocket('ws://localhost:8080/synapse');
