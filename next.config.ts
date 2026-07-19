@@ -24,12 +24,13 @@ const securityHeaders = [
   {
     key: "Content-Security-Policy",
     value:
-      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; connect-src 'self' wss://*.pusher.com https://*.pusher.com https://swetrixapi.kastro.is; img-src 'self' data: https://swetrixapi.kastro.is; frame-ancestors 'none'",
+      "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; connect-src 'self' wss://*.pusher.com https://*.pusher.com https://swetrixapi.kastro.is; img-src 'self' data: https://swetrixapi.kastro.is; frame-ancestors 'none'; form-action 'self'",
   },
 ];
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  poweredByHeader: false,
   headers: async () => [
     {
       source: "/(.*)",

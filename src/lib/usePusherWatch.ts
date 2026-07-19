@@ -22,8 +22,10 @@ export function usePusherWatch({ enabled, onSessionStart, onEvent, onTriggerAcce
   const sessionCreatedRef = useRef(false);
   const callbacksRef = useRef({ onSessionStart, onEvent, onTriggerAccepted, onTriggerRejected });
   
-  // Keep callbacks fresh
-  callbacksRef.current = { onSessionStart, onEvent, onTriggerAccepted, onTriggerRejected };
+  // Keep callbacks fresh without mutating refs during render.
+  useEffect(() => {
+    callbacksRef.current = { onSessionStart, onEvent, onTriggerAccepted, onTriggerRejected };
+  }, [onSessionStart, onEvent, onTriggerAccepted, onTriggerRejected]);
 
   const createSession = useCallback(() => {
     if (sessionCreatedRef.current) return;

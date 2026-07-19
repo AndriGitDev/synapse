@@ -1,0 +1,4 @@
+Contact: https://github.com/AndriGitDev/synapse/security/advisories/new
+Expires: 2027-07-19T00:00:00Z
+Preferred-Languages: en, is
+Canonical: https://synapse.andri.is/.well-known/security.txt
