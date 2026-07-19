@@ -9,10 +9,10 @@ function useTyping(lines: string[], speed = 40, lineDelay = 800) {
   const [displayed, setDisplayed] = useState<string[]>([]);
   const [currentLine, setCurrentLine] = useState(0);
   const [currentChar, setCurrentChar] = useState(0);
-  const [done, setDone] = useState(false);
+  const done = currentLine >= lines.length;
 
   useEffect(() => {
-    if (currentLine >= lines.length) { setDone(true); return; }
+    if (currentLine >= lines.length) return;
     if (currentChar <= lines[currentLine].length) {
       const timeout = setTimeout(() => {
         setDisplayed(prev => {

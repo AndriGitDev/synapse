@@ -17,7 +17,7 @@ import {
   ArrowRightLeft,
   LucideIcon
 } from 'lucide-react';
-import { AgentEvent, EVENT_COLORS, EventType, AGENT_COLORS } from '@/lib/types';
+import { AgentEvent, EVENT_COLORS, EventType } from '@/lib/types';
 
 const ICONS: Record<EventType, LucideIcon> = {
   thought: Brain,
