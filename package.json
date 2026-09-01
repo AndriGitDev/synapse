@@ -2,6 +2,9 @@
   "name": "synapse",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,6 +13,7 @@
     "bridge:claude-code": "node --experimental-strip-types scripts/claude-code-bridge.mts"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.577.0",
     "next": "^16.3.0",
@@ -33,6 +37,8 @@
     "typescript": "^5"
   },
   "overrides": {
+    "js-yaml": "^4.3.1",
+    "nanoid": "^3.3.18",
     "picomatch": "^4.0.4",
     "postcss": "^8.5.26",
     "minimatch@3": {

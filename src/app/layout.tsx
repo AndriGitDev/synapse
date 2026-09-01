@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const inter = Inter({
@@ -51,38 +51,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-slate-950`}>
         {children}
-        <Script
-          src="https://cdn.jsdelivr.net/npm/swetrix@4.4.0/dist/swetrix.js"
-          integrity="sha384-FJ43Z1wutnoz28042fgO8YM6xIvC9FGaFuwKnd4THHojerDiGYd0IL1DUJycX3xE"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
-        <Script id="swetrix-init" strategy="afterInteractive">
-          {`
-            document.addEventListener('DOMContentLoaded', function() {
-              if (window.swetrix) {
-                swetrix.init('9U8WieznN7O2', {
-                  apiURL: 'https://swetrixapi.kastro.is/log',
-                });
-                swetrix.trackViews();
-              }
-            });
-            if (document.readyState !== 'loading' && window.swetrix) {
-              swetrix.init('9U8WieznN7O2', {
-                apiURL: 'https://swetrixapi.kastro.is/log',
-              });
-              swetrix.trackViews();
-            }
-          `}
-        </Script>
-        <noscript>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://swetrixapi.kastro.is/log/noscript?pid=9U8WieznN7O2"
-            alt=""
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-        </noscript>
+        <Analytics />
       </body>
     </html>
   );

@@ -1,6 +1,5 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
 export const alt = 'SYNAPSE - Watch AI Agents Think';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
@@ -121,7 +120,7 @@ export default function OGImage(): ImageResponse {
           {[
             { label: '💭 Reasoning', color: '#8b5cf6' },
             { label: '🔍 Tool Call', color: '#3b82f6' },
-            { label: '✓ Result', color: '#22c55e' },
+            { label: 'Result', color: '#22c55e' },
             { label: '✍️ File Write', color: '#f97316' },
           ].map((n) => (
             <div
