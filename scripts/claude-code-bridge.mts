@@ -21,7 +21,7 @@ import { WebSocketServer } from 'ws';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { ClaudeCodeStreamParser, parseClaudeCodeJsonl } from '../src/lib/parsers/claude-code.mts';
+import { ClaudeCodeStreamParser, parseClaudeCodeJsonl } from '../src/lib/parsers/claude-code.ts';
 import type { AgentEvent } from '../src/lib/types';
 
 interface CliOptions {

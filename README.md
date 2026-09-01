@@ -39,6 +39,16 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) and explore!
 
+## ▲ Deployment
+
+SYNAPSE is hosted on Vercel and deploys from the `main` branch. Vercel detects
+the Next.js application automatically; no custom build or output settings are
+required.
+
+The hosted site does not run the local WebSocket bridge. Live Mode connects
+from the browser to a bridge started on the viewer's machine, while Demo and
+Upload modes run entirely in the browser.
+
 ## 🎮 Keyboard Shortcuts
 
 | Key | Action |
