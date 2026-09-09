@@ -1,6 +1,7 @@
 'use client';
 
-import { Brain, Github, ArrowRight, Terminal, Cpu, Network, ChevronRight } from 'lucide-react';
+import { Brain, ArrowRight, Terminal, Cpu, Network, ChevronRight } from 'lucide-react';
+import { GitHubMark } from '@/components/icons/GitHubMark';
 import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
 
@@ -238,7 +239,7 @@ export default function LandingPage() {
             </a>
             <a href="https://github.com/AndriGitDev/synapse" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-3 py-1.5 text-slate-500 hover:text-white transition-colors text-sm">
-              <Github className="w-4 h-4" />
+              <GitHubMark className="w-4 h-4" />
             </a>
             <Link href="/app"
               className="flex items-center gap-1.5 px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.06] rounded-lg text-sm font-medium transition-all">
@@ -297,7 +298,7 @@ export default function LandingPage() {
             </Link>
             <a href="https://github.com/AndriGitDev/synapse" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 px-6 py-3.5 text-slate-500 hover:text-white text-sm transition-colors">
-              <Github className="w-4 h-4" />
+              <GitHubMark className="w-4 h-4" />
               View Source
             </a>
           </div>

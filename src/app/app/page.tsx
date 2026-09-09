@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useCallback, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ReactFlowProvider } from 'reactflow';
-import { Brain, Upload, Github, Sparkles, Zap, Eye, Menu, X, Play, Pause } from 'lucide-react';
+import { Brain, Upload, Sparkles, Zap, Eye, Menu, X, Play, Pause } from 'lucide-react';
+import { GitHubMark } from '@/components/icons/GitHubMark';
 import { motion } from 'framer-motion';
 import { SynapseGraph } from '@/components/graph/SynapseGraph';
 import { PlaybackControls } from '@/components/controls/PlaybackControls';
@@ -136,7 +137,7 @@ export default function AppPage() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-3 py-1.5 text-slate-500 hover:text-white transition-colors rounded-lg hover:bg-slate-800/50"
           >
-            <Github className="w-4 h-4" />
+            <GitHubMark className="w-4 h-4" />
             <span className="text-sm hidden sm:inline">Source</span>
           </a>
           <button
