@@ -49,7 +49,7 @@ export default function AppPage() {
     }
   }, [mode, session, setSession]);
   
-  const handleModeChange = (newMode: Mode) => {
+  function handleModeChange(newMode: Mode) {
     setMode(newMode);
     reset();
     setSelectedEventId(null);
