@@ -21,6 +21,8 @@ import { WebSocketServer } from 'ws';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
+import { pathToFileURL } from 'node:url';
+import { StringDecoder } from 'node:string_decoder';
 import { ClaudeCodeStreamParser, parseClaudeCodeJsonl } from '../src/lib/parsers/claude-code.ts';
 import type { AgentEvent } from '../src/lib/types';
 
@@ -82,44 +84,49 @@ function findLatestSessionFile(): string | null {
  * tick only processes appended bytes. A trailing partial line (file flushed
  * mid-record) is preserved in `partial` and prepended to the next read.
  */
-class JsonlTail {
+export class JsonlTail {
   private offset = 0;
   private partial = '';
+  private identity: string | null = null;
+  private decoder = new StringDecoder('utf8');
   private readonly file: string;
 
   constructor(file: string) {
     this.file = file;
   }
 
-  /** Read everything appended since the last call; returns parsed records. */
+  /** Read appended bytes from one verified descriptor, not a prior path stat. */
   readNew(): unknown[] {
-    let stat: fs.Stats;
+    let fd: number;
     try {
-      stat = fs.statSync(this.file);
+      fd = fs.openSync(this.file, fs.constants.O_RDONLY |
+        (fs.constants.O_NOFOLLOW ?? 0) | (fs.constants.O_NONBLOCK ?? 0));
     } catch {
       return [];
     }
-    // File shrunk (replaced/truncated) — restart from zero.
-    if (stat.size < this.offset) {
-      this.offset = 0;
-      this.partial = '';
-    }
-    if (stat.size === this.offset) return [];
-    const fd = fs.openSync(this.file, 'r');
     try {
+      const stat = fs.fstatSync(fd);
+      if (!stat.isFile()) return [];
+      const identity = `${stat.dev}:${stat.ino}`;
+      if (this.identity !== identity || stat.size < this.offset) {
+        this.offset = 0;
+        this.partial = '';
+        this.decoder = new StringDecoder('utf8');
+      }
+      this.identity = identity;
+      if (stat.size === this.offset) return [];
       const length = stat.size - this.offset;
       const buf = Buffer.alloc(length);
-      fs.readSync(fd, buf, 0, length, this.offset);
-      this.offset = stat.size;
-      const text = this.partial + buf.toString('utf8');
+      const bytesRead = fs.readSync(fd, buf, 0, length, this.offset);
+      this.offset += bytesRead;
+      const text = this.partial + this.decoder.write(buf.subarray(0, bytesRead));
       const lastNl = text.lastIndexOf('\n');
       if (lastNl < 0) {
         this.partial = text;
         return [];
       }
       this.partial = text.slice(lastNl + 1);
-      const complete = text.slice(0, lastNl);
-      return parseClaudeCodeJsonl(complete);
+      return parseClaudeCodeJsonl(text.slice(0, lastNl));
     } finally {
       fs.closeSync(fd);
     }
@@ -236,4 +243,4 @@ function main(): void {
   process.on('SIGTERM', shutdown);
 }
 
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();
